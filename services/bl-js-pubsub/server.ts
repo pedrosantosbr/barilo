@@ -1,12 +1,13 @@
-import OpenAI from "openai";
+import OpenAI from "openai/index.mjs";
+import { defaultSystemPrompt, defaultUserPrompt } from "./prompt";
 
 const openai = new OpenAI();
 
 const CORS_HEADERS = {
   headers: {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS, POST", // Adjust methods as needed
-    "Access-Control-Allow-Headers": "Content-Type", // Adjust headers as needed
+    "Access-Control-Allow-Methods": "OPTIONS, POST",
+    "Access-Control-Allow-Headers": "Content-Type",
   },
 };
 
@@ -49,11 +50,9 @@ const server = Bun.serve<WSData>({
   },
   websocket: {
     open(ws) {
-      console.debug(`Client connected: ${ws.data.id}`);
       ws.subscribe("chat");
     },
     async message(ws, message) {
-      // we could use zod here
       const payload = JSON.parse(message as string) as WsMessage;
 
       switch (payload.type) {
@@ -70,9 +69,12 @@ const server = Bun.serve<WSData>({
             model: "gpt-3.5-turbo",
             messages: [
               {
+                role: "assistant",
+                content: defaultSystemPrompt,
+              },
+              {
                 role: "user",
-                content:
-                  "Liste 3 receitas de macarrão juntamente com o modo de preparo. Seja bem específico quanto aos ingredientes e o modo de preparo.",
+                content: `${defaultUserPrompt} \n ${payload.message}`,
               },
             ],
             stream: true,
@@ -90,8 +92,7 @@ const server = Bun.serve<WSData>({
       }
     },
     close(ws) {
-      const msg = `${ws.data.id} has left the chat`;
-      console.log(msg);
+      ws.unsubscribe("chat");
     },
   },
 });

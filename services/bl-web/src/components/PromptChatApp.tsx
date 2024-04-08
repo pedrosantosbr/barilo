@@ -11,8 +11,6 @@ const PromptChatApp = () => {
   const [recipe, setRecipe] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {}, []);
-
   const { socket, isConnected } = useSocket({
     endpoint: `ws://localhost:3000/`,
   });

@@ -1,4 +1,3 @@
-import { Message } from "./Prompt.types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PromptChatBubble = ({ message }: { message: string }) => {
@@ -13,11 +12,11 @@ const PromptChatBubble = ({ message }: { message: string }) => {
 const PromptChatBubbleSkeleton = () => {
   return (
     <>
-      <Skeleton className="w-[full] h-[20px] rounded-xs" />
-      <Skeleton className="w-[full] h-[20px] rounded-xs" />
-      <Skeleton className="w-[full] h-[20px] rounded-xs" />
-      <Skeleton className="w-[full] h-[20px] rounded-xs" />
-      <Skeleton className="w-[80%] h-[20px] rounded-xs" />
+      <Skeleton className="w-[full] h-[20px] rounded-none" />
+      <Skeleton className="w-[full] h-[20px] rounded-none" />
+      <Skeleton className="w-[full] h-[20px] rounded-none" />
+      <Skeleton className="w-[full] h-[20px] rounded-none" />
+      <Skeleton className="w-[80%] h-[20px] rounded-none" />
     </>
   );
 };

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, DM_Sans } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import cn from "classnames";
+import { CookieIcon } from "@radix-ui/react-icons";
 
 const dm = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -23,6 +24,12 @@ export default function RootLayout({
           dm.variable
         )}
       >
+        <header className="px-10 h-14 border-b flex items-center">
+          <div className="font-extrabold flex items-center text-2xl text-slate-700">
+            <CookieIcon className="w-8 h-8 mr-2" />
+            Barilo
+          </div>
+        </header>
         {children}
       </body>
     </html>
