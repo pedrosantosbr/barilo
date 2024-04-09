@@ -12,7 +12,7 @@ const PromptChatApp = () => {
   const [loading, setLoading] = useState(false);
 
   const { socket, isConnected } = useSocket({
-    endpoint: `ws://localhost:3000/`,
+    endpoint: `ws://localhost:1500/`,
   });
 
   const handleMessageSend = (content: string) => {
@@ -44,18 +44,20 @@ const PromptChatApp = () => {
   return (
     <>
       <PromptChatBubbleList recipe={recipe} loading={loading} />
-      <div className="fixed bottom-0 p-10 left-0 right-0 z-50 bg-slate-50">
+      <div className="fixed bottom-0 p-10 left-0 right-0 z-50 bg-white">
         <div className="grid grid-cols-12">
           <div className="col-span-6">
             <div
               className={cn(
-                "flex bg-white rounded-lg items-center relative border-2",
+                "flex bg-white shadow-md rounded-lg items-center relative border border-slate-400",
                 isConnected ? "" : "border-red-500"
               )}
             >
               <PromptChatInput onMessageSend={handleMessageSend} />
             </div>
-            <small>Shift + Enter para adicionar uma nova linha</small>
+            <div className="text-center text-xs mt-4">
+              Shift + Enter para adicionar uma nova linha
+            </div>
           </div>
         </div>
       </div>

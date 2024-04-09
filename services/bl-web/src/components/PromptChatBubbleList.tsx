@@ -13,8 +13,6 @@ const PromptChatBubbleList: FC<PromptChatBubbleListProps> = ({
   recipe,
   loading,
 }) => {
-  // reduce amount of rendering
-
   if (recipe.length === 0 && !loading) {
     return (
       <div>

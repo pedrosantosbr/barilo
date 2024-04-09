@@ -32,6 +32,7 @@ type WsMessage =
     };
 
 const server = Bun.serve<WSData>({
+  port: 1500,
   fetch(req, server) {
     const clientId = crypto.randomUUID();
     const success = server.upgrade(req, {

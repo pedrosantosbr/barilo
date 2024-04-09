@@ -45,9 +45,10 @@ const PromptChatInput: React.FC<PromptChatInputProps> = ({ onMessageSend }) => {
   const sendMessage = () => {
     if (message === "") return;
     if (message === prevMessage) return;
-    clearInput();
     setPrevMessage(message);
-    onMessageSend(message);
+    // onMessageSend(message);
+    clearInput();
+    console.log("cleared");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -57,6 +58,14 @@ const PromptChatInput: React.FC<PromptChatInputProps> = ({ onMessageSend }) => {
     }
   };
 
+  React.useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = "auto";
+      textAreaRef.current.style.height =
+        textAreaRef.current?.scrollHeight + "px";
+    }
+  }, [message]);
+
   return (
     <>
       <TextArea
@@ -64,7 +73,8 @@ const PromptChatInput: React.FC<PromptChatInputProps> = ({ onMessageSend }) => {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onKeyDown={handleKeyDown}
-        className=""
+        className="resize-none"
+        value={message}
         onChange={(e) => {
           setMessage(e.target.value);
         }}
