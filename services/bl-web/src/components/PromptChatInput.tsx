@@ -25,7 +25,7 @@ const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 TextArea.displayName = "TextArea";
 
 import { Button } from "@/components/ui/button";
-import { SendIcon } from "lucide-react";
+import { ArrowBigRightDashIcon } from "lucide-react";
 
 export type PromptChatInputProps = {
   onMessageSend: (content: string) => void;
@@ -46,9 +46,8 @@ const PromptChatInput: React.FC<PromptChatInputProps> = ({ onMessageSend }) => {
     if (message === "") return;
     if (message === prevMessage) return;
     setPrevMessage(message);
-    // onMessageSend(message);
+    onMessageSend(message);
     clearInput();
-    console.log("cleared");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -69,6 +68,7 @@ const PromptChatInput: React.FC<PromptChatInputProps> = ({ onMessageSend }) => {
   return (
     <>
       <TextArea
+        rows={4}
         ref={textAreaRef}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
@@ -84,9 +84,10 @@ const PromptChatInput: React.FC<PromptChatInputProps> = ({ onMessageSend }) => {
           sendMessage();
         }}
         variant={"ghost"}
+        size={"icon"}
         className="ml-2"
       >
-        <SendIcon className="w-5 text-slate-400" />{" "}
+        <ArrowBigRightDashIcon className="w-7 h-7 text-slate-600" />{" "}
       </Button>
     </>
   );

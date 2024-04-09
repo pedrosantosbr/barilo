@@ -44,12 +44,14 @@ const PromptChatApp = () => {
   return (
     <>
       <PromptChatBubbleList recipe={recipe} loading={loading} />
-      <div className="fixed bottom-0 p-10 left-0 right-0 z-50 bg-white">
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white">
         <div className="grid grid-cols-12">
+          <div className="col-span-2"></div>
           <div className="col-span-6">
             <div
               className={cn(
-                "flex bg-white shadow-md rounded-lg items-center relative border border-slate-400",
+                "flex bg-white shadow-md rounded-xl items-center relative border border-slate-400 px-2",
                 isConnected ? "" : "border-red-500"
               )}
             >
