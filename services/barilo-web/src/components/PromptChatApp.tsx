@@ -29,13 +29,11 @@ const PromptChatApp = () => {
   const appendText = (newRecipe: string) => {
     setRecipe((prevRecipe: string) => prevRecipe + `${newRecipe}`);
   };
-  const appendMarkdown = (markdown: string) => {
-    setRecipeMarkdown((prevRecipe: string) => prevRecipe + `${markdown}`);
-  };
 
   socket.onmessage = async (event) => {
     setLoading(false);
 
+    // putting here to avoid race condition
     const reader = new FileReader();
 
     if (event.data instanceof Blob) {
@@ -44,25 +42,25 @@ const PromptChatApp = () => {
 
     reader.onload = async (event) => {
       const newRecipe = event.target?.result as string;
-      appendText(newRecipe);
+      appendText(newRecipe.replace(/\n/g, "<br>"));
     };
   };
 
-  useEffect(() => {
-    async function convertRecipeStringToMarkdown(recipe: string) {
-      const matterResult = matter(recipe);
-      const processedContent = await remark()
-        .use(html)
-        .process(matterResult.content);
-      const contentHtml = processedContent.toString();
-      setRecipeMarkdown(contentHtml);
-    }
-    convertRecipeStringToMarkdown(recipe);
-  }, [recipe]);
+  // useEffect(() => {
+  //   async function convertRecipeStringToMarkdown(recipe: string) {
+  //     const matterResult = matter(recipe);
+  //     const processedContent = await remark()
+  //       .use(html)
+  //       .process(matterResult.content);
+  //     const contentHtml = processedContent.toString();
+  //     setRecipeMarkdown(contentHtml);
+  //   }
+  //   convertRecipeStringToMarkdown(recipe);
+  // }, [recipe]);
 
   return (
     <>
-      <PromptChatBubbleList recipe={recipeMarkdown} loading={loading} />
+      <PromptChatBubbleList recipe={recipe} loading={loading} />
 
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white">
         <div className="grid grid-cols-12">
