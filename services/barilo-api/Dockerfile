@@ -31,8 +31,11 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app .
 
+ARG OPENAI_API_KEY
 
 # run the app
 USER bun
-EXPOSE 3000/tcp
+EXPOSE 5000/tcp
+ENV NODE_ENV=production
+ENV OPENAI_API_KEY=$OPENAI_API_KEY
 ENTRYPOINT [ "bun", "run", "server.ts" ]

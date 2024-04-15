@@ -16,7 +16,7 @@ const PromptChatApp = () => {
   const [loading, setLoading] = useState(false);
 
   const { socket, isConnected } = useSocket({
-    endpoint: `ws://localhost:1500/`,
+    endpoint: `ws://localhost:5000/`,
   });
 
   const handleMessageSend = (content: string) => {

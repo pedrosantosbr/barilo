@@ -97,4 +97,10 @@ info "🛠️ Building api image..."
 docker build -t barilo-api $REPO_ROOT/services/barilo-api
 
 info "🏃🏻 Running api..." 
-docker run -d -p 8080:8080 barilo-api
+docker run -d -p 5000:5000 barilo-api -e OPENAI_API_KEY=$OPENAI_API_KEY
+
+info "🛠️ Building web image...
+docker build -t barilo-web $REPO_ROOT/services/barilo-web"
+
+info "🏃🏻 Running web..."
+docker run -d -p 3000:3000 barilo-web
