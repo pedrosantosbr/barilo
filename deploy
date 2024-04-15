@@ -10,6 +10,10 @@ COLOR_PURPLE="\033[0;35m"
 COLOR_GRAY="\033[0;90m"
 COLOR_NONE="\033[0m"
 
+function log() {
+  echo -e "$*" >&2
+}
+
 function info() {
   log "${COLOR_GREEN}INF${COLOR_NONE} $* $(current_command)"
 }
@@ -41,12 +45,11 @@ function docker_install() (
 
     su - ${USER}
   fi
-  ;;
 )
 
 # Ensure docker is up running
 function ensure_docker() (
-  install_docker
+  docker_install
 
   case $(uname -s) in
   Darwin)
@@ -90,6 +93,8 @@ function ensure_docker() (
 
 ensure_docker
 
+info "🛠️ Building api image..."
 docker build -t barilo-api $REPO_ROOT/services/barilo-api
 
+info "🏃🏻 Running api..." 
 docker run -d -p 8080:8080 barilo-api
