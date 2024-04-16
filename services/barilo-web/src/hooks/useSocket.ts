@@ -4,22 +4,24 @@ export type RecipeState = {
   recipes: string;
 };
 
+function createWebsocketConnection(endpoint: string): WebSocket {
+  const socket = new WebSocket(endpoint, ["websocket"]);
+  return socket;
+}
+
 export function useSocket({ endpoint }: { endpoint: string }) {
   const [isConnected, setIsConnected] = useState(false);
-  const socket = useMemo(
-    () => new WebSocket(endpoint, ["websocket"]),
-    [endpoint]
-  );
+  const socket = useMemo(() => createWebsocketConnection(endpoint), [endpoint]);
+
+  socket.onerror = (error) => {
+    setIsConnected(false);
+    console.log(error);
+  };
 
   useEffect(() => {
     socket.onopen = (event) => {
       setIsConnected(true);
       console.log(event);
-    };
-
-    socket.onerror = (error) => {
-      setIsConnected(false);
-      console.log(error);
     };
   }, [socket]);
 
