@@ -1,14 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PromptChatBubbleList from "./PromptChatBubbleList";
 import PromptChatInput from "./PromptChatInput";
 import { useSocket } from "@/hooks/useSocket";
 import { cn } from "@/lib/utils";
-import { remark } from "remark";
-import html from "remark-html";
-import matter from "gray-matter";
 
 const PromptChatApp = () => {
   const [recipe, setRecipe] = useState<string>("");
@@ -20,6 +17,9 @@ const PromptChatApp = () => {
   });
 
   const handleMessageSend = (content: string) => {
+    // TODO: create a event handler to listen
+    // when a user send a new message
+    setRecipe("");
     setLoading(true);
     socket?.send(
       JSON.stringify({ type: "publish", message: content, channel: "chat" })
