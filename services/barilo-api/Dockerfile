@@ -36,5 +36,4 @@ USER bun
 EXPOSE 5000/tcp
 ENV NODE_ENV=production
 
-# ENTRYPOINT [ "bun", "run", "server.ts"]
-CMD [ "tail", "-f", "/dev/null"]
+ENTRYPOINT [ "bun", "run", "server.ts"]
