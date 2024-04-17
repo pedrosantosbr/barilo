@@ -1,7 +1,12 @@
 import OpenAI from "openai/index.mjs";
 import { defaultSystemPrompt, defaultUserPrompt } from "./prompt";
+import dotenv from 'dotenv';
 
-const openai = new OpenAI();
+dotenv.config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const CORS_HEADERS = {
   headers: {
@@ -32,7 +37,7 @@ type WsMessage =
     };
 
 const server = Bun.serve<WSData>({
-  port: 5000,
+  port: 1500,
   fetch(req, server) {
     const clientId = crypto.randomUUID();
     const success = server.upgrade(req, {

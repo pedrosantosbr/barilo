@@ -11,5 +11,9 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": { "openai": "^4.33.0" }
+  "dependencies": {
+    "@types/node": "^20.12.7",
+    "dotenv": "^16.4.5",
+    "openai": "^4.33.0"
+  }
 }
