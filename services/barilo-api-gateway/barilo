@@ -6,9 +6,7 @@ server {
 
     location ^~ /_next {
         alias /root/barilo/services/barilo-web/.next;
-        try_files $uri;
-        expires 365d;
-        add_header Cache-Control 'public';
+        try_files $uri $uri/ =404;
     }
 
     location / {
