@@ -1,0 +1,12 @@
+[Unit]
+Description=Barilo JS Frontend App
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/barilo/services/barilo-web
+ExecStart=/root/.bun/bin/bun run dev
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
