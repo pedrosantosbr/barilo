@@ -5,7 +5,7 @@ server {
     server_name www.barilo.com.br barilo.com.br;
 
     location ^~ /_next {
-        alias /root/barilo/services/barilo-web/.next;
+        alias /app/.next;
         try_files $uri $uri/ =404;
     }
 
