@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/root/barilo/services/barilo-api
-ExecStart=bun run start
+ExecStart=/root/.bun/bin/bun run start
 Restart=on-failure
 
 [Install]
