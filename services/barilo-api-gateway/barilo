@@ -12,6 +12,13 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    location ^~ /_next {
+        alias /root/barilo/services/barilo-web/.next;
+        try_files $uri @nextserver;
+        expires 365d;
+        add_header Cache-Control 'public';
+    }
+
     location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
         expires max;
         add_header Pragma public;
