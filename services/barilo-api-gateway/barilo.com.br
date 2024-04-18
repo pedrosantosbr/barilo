@@ -1,6 +1,7 @@
 # Nginx configuration to proxy requests
 server {
     listen      80;
+    listen      [::]:80;
     server_name www.barilo.com.br barilo.com.br;
 
     location / {
