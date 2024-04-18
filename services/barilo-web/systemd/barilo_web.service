@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/root/barilo/services/barilo-web
-ExecStart=/root/.bun/bin/bun run dev
+WorkingDirectory=/root/barilo/services/barilo-web/.next/standalone
+ExecStart=/root/.nvm/versions/node/v20.12.0/bin/node server.js
 Restart=on-failure
 
 [Install]
