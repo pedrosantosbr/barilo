@@ -9,11 +9,10 @@ import { cn } from "@/lib/utils";
 
 const PromptChatApp = () => {
   const [recipe, setRecipe] = useState<string>("");
-  const [recipeMarkdown, setRecipeMarkdown] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const { socket, isConnected } = useSocket({
-    endpoint: `ws://0.0.0.0:1500/`,
+    endpoint: `ws://barilo.com.br/stream/`,
   });
 
   const handleMessageSend = (content: string) => {
