@@ -38,22 +38,27 @@ type WsMessage =
 
 const server = Bun.serve<WSData>({
   port: 1500,
-  hostname: "0.0.0.0",
+  hostname: "127.0.0.1",
   fetch(req, server) {
-    const clientId = crypto.randomUUID();
-    const success = server.upgrade(req, {
-      data: {
-        id: clientId,
-        createdAt: Date(),
-      },
-    });
+    const url = new URL(req.url);
+    if (url.pathname === "/stream") {
+      const clientId = crypto.randomUUID();
+      const success = server.upgrade(req, {
+        data: {
+          id: clientId,
+          createdAt: Date(),
+        },
+      });
 
-    return success
+      return success
       ? new Response("success", CORS_HEADERS)
       : new Response("WebSocket upgrade error", {
           ...CORS_HEADERS,
           status: 500,
         });
+    }
+  
+    return new Response("Hello World")
   },
   websocket: {
     open(ws) {
