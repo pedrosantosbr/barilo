@@ -12,7 +12,7 @@ const PromptChatApp = () => {
   const [loading, setLoading] = useState(false);
 
   const { socket, isConnected } = useSocket({
-    endpoint: `ws://barilo.com.br/stream/`,
+    endpoint: `ws://barilo.com.br/stream`,
   });
 
   const handleMessageSend = (content: string) => {

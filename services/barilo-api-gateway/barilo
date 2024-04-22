@@ -4,6 +4,11 @@ server {
     listen      [::]:80;
     server_name www.barilo.com.br barilo.com.br;
 
+    location ^~ /_next {
+        alias /app/.next;
+        try_files $uri $uri/ =404;
+    }
+
     # websockets
     location /stream {
         proxy_pass http://127.0.0.1:1500;
@@ -13,6 +18,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location / {
@@ -21,11 +27,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /_next {
-        alias /app/.next;
-        try_files $uri $uri/ =404;
     }
 
     location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
