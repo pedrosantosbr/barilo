@@ -33,6 +33,10 @@ var (
 	space   = []byte{' '}
 )
 
+type Chat interface {
+	Message(content string) error
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -79,7 +83,8 @@ func (c *Client) readPump() {
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		// c.hub.broadcast <- message
-
+		c.send <- message
+		// - remove down
 		var wsmsg WSMessage
 
 		if err := json.Unmarshal(message, &wsmsg); err != nil {
@@ -201,7 +206,6 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: in the future let's decrypt the token and check user identity
-
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
