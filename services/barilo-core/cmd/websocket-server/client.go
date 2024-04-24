@@ -1,13 +1,10 @@
 package main
 
 import (
-	logging "barilo/lib/logger"
-	"barilo/lib/openai"
 	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -33,30 +30,30 @@ var (
 	space   = []byte{' '}
 )
 
-type Chat interface {
-	Message(content string) error
-}
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
 
-type WSMessage struct {
-	Question string `json:"question"`
+// ChatServicer...
+type ChatServicer interface {
+	GetRecipes(ingredients string) (chan string, chan error)
+}
+
+type Message struct {
+	Data string `json:"data"`
+	Key  string `json:"key"`
 }
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub *Hub
-
 	// The websocket connection.
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	logger *zap.Logger
+	svc ChatServicer
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -66,7 +63,6 @@ type Client struct {
 // reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
-		c.hub.unregister <- c
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -82,70 +78,76 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		// c.hub.broadcast <- message
-		c.send <- message
-		// - remove down
-		var wsmsg WSMessage
 
-		if err := json.Unmarshal(message, &wsmsg); err != nil {
+		var msg Message
+		if err := json.Unmarshal(message, &msg); err != nil {
 			c.logger.Error("failed to unmarshal message", zap.Error(err))
 			continue
 		}
 
-		// Open AI streaming API
-		params := &openai.ChatCompletionRequest{
-			Model: "gpt-3.5-turbo",
-			Messages: []openai.ChatMessage{
-				{
-					Role:    "system",
-					Content: string(wsmsg.Question),
-				},
-			},
-			Stream: true,
-		}
-
-		req, err := openai.NewChatCompletionRequest(os.Getenv("OPENAI_API_KEY"), params)
-		if err != nil {
-			c.logger.Error("failed to create request", zap.Error(err))
-			continue
-		}
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			c.logger.Error("failed to send request", zap.Error(err))
-			continue
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			c.logger.Error("unexpected status code", zap.Int("status_code", resp.StatusCode))
-			continue
-		}
-
-		ctx := req.Context()
-		ctx = logging.WithLogger(ctx, c.logger)
-
-		chanOut, chanErr := openai.HandleStreamResponse(ctx, resp)
-
-		go func() {
-			for out := range chanOut {
-				w, err := c.conn.NextWriter(websocket.TextMessage)
-				if err != nil {
-					return
-				}
-
-				w.Write(out)
-				if err := w.Close(); err != nil {
-					return
+		switch msg.Key {
+		case "prompt.recipes.get":
+			chOut, chErr := c.svc.GetRecipes(msg.Data)
+			for {
+				select {
+				case chunk := <-chOut:
+					c.send <- []byte(chunk)
+				case err := <-chErr:
+					break
 				}
 			}
-		}()
 
-		if err := <-chanErr; err != nil {
-			if err.Error() == "EOF" {
-				continue
-			}
-			c.logger.Error("failed to handle stream response", zap.Error(err))
+		case "prompt.cancel":
+			//
 		}
+
+		// // Open AI streaming API
+		// params := &openai.ChatCompletionRequest{
+		// 	Model: "gpt-3.5-turbo",
+		// 	Messages: []openai.ChatMessage{
+		// 		{
+		// 			Role:    "system",
+		// 			Content: string(wsmsg.Question),
+		// 		},
+		// 	},
+		// 	Stream: true,
+		// }
+
+		// req, err := openai.NewChatCompletionRequest(os.Getenv("OPENAI_API_KEY"), params)
+		// if err != nil {
+		// 	c.logger.Error("failed to create request", zap.Error(err))
+		// 	continue
+		// }
+
+		// resp, err := http.DefaultClient.Do(req)
+		// if err != nil {
+		// 	c.logger.Error("failed to send request", zap.Error(err))
+		// 	continue
+		// }
+
+		// if resp.StatusCode != http.StatusOK {
+		// 	c.logger.Error("unexpected status code", zap.Int("status_code", resp.StatusCode))
+		// 	continue
+		// }
+
+		// ctx := req.Context()
+		// ctx = logging.WithLogger(ctx, c.logger)
+
+		// chanOut, chanErr := openai.HandleStreamResponse(ctx, resp)
+
+		// go func() {
+		// 	for out := range chanOut {
+		// 		w, err := c.conn.NextWriter(websocket.TextMessage)
+		// 		if err != nil {
+		// 			return
+		// 		}
+
+		// 		w.Write(out)
+		// 		if err := w.Close(); err != nil {
+		// 			return
+		// 		}
+		// 	}
+		// }()
 	}
 }
 
@@ -195,33 +197,12 @@ func (c *Client) writePump() {
 	}
 }
 
-// serveWs handles websocket requests from the peer.
-func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	// get X-ID from header
-	id := r.Header.Get("x-request-token")
-	if id == "" {
-		w.Header().Set("x-ws-error", "x-request-token is required on the header request")
-		http.Error(w, "x-request-token is required", http.StatusUnauthorized)
-		return
-	}
-
-	// TODO: in the future let's decrypt the token and check user identity
+// serveWs handles websocket requests from the peer 🖥️ 📲.
+func getRecipes(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	client := &Client{
-		hub:    hub,
-		conn:   conn,
-		send:   make(chan []byte, 256),
-		logger: logging.FromContext(r.Context()),
-	}
-	client.hub.register <- client
-
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
-	go client.writePump()
-	go client.readPump()
 }

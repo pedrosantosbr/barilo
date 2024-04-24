@@ -1,6 +1,7 @@
 package main
 
 import (
+	"barilo/internals/prompt"
 	logging "barilo/lib/logger"
 	"encoding/json"
 	"flag"
@@ -43,24 +44,20 @@ func main() {
 
 	flag.Parse()
 
-	hub := newHub()
-	go hub.run()
+	// DI
+	recipe := prompt.NewRecipePrompt(nil)
 
 	http.HandleFunc("/", serveHome)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		// pass logger to context
-		ctx := logging.WithLogger(r.Context(), logger)
-		r = r.WithContext(ctx)
-
-		serveWs(hub, w, r)
+		recipe.ListenAndConsume(w, r)
 	})
+
 	server := &http.Server{
 		Addr:              *addr,
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 
 	logger.Info(fmt.Sprintf("Server started at %s", *addr))
-
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
