@@ -1,7 +1,6 @@
 package openai
 
 import (
-	logging "barilo/lib/logger"
 	"bufio"
 	"bytes"
 	"context"
@@ -46,11 +45,7 @@ func NewChatCompletionRequest(apiKey string, chatRequest *ChatCompletionRequest)
 
 // Handling streaming responses
 func HandleStreamResponse(ctx context.Context, resp *http.Response) (<-chan []byte, <-chan error) {
-	logger := logging.FromContext(ctx)
-
 	reader := bufio.NewReader(resp.Body)
-
-	logger.Info("Handling stream response")
 
 	chanErr := make(chan error)
 	chanOut := make(chan []byte)
