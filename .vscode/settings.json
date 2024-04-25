@@ -1,2 +1,8 @@
 {
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  },
+  "[javascript][javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
