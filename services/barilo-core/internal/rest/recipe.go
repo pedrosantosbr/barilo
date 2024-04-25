@@ -10,6 +10,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+//go:generate counterfeiter -generate
+
+//counterfeiter:generate -o resttesting/recipe_service.go . RecipeService
+
 // RecipeService interface defines all methods a RecipeService should implement
 type RecipeService interface {
 	GetRecipes(ctx context.Context, ingredients string) (<-chan []byte, <-chan error)
