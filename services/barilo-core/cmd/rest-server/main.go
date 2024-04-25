@@ -1,7 +1,6 @@
 package main
 
 import (
-	"barilo/rest"
 	"context"
 	"errors"
 	"flag"
@@ -11,6 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"barilo/internal/rest"
+	"barilo/internal/service"
 
 	"github.com/didip/tollbooth/v6"
 	"github.com/didip/tollbooth/v6/limiter"
@@ -120,8 +122,8 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 	}
 
 	//-
-
-	rest.NewRecipeHandler().Register(router)
+	svc := service.NewRecipe()
+	rest.NewRecipeHandler(svc).Register(router)
 
 	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second})
 
