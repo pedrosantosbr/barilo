@@ -16,7 +16,7 @@ import (
 
 // RecipeService interface defines all methods a RecipeService should implement
 type RecipeService interface {
-	GetRecipes(ctx context.Context, ingredients string) (<-chan []byte, <-chan error)
+	GetRecipes(ctx context.Context, ingredients string) (<-chan []byte, <-chan error, error)
 }
 
 // RecipeHandler
@@ -50,7 +50,7 @@ func (h *RecipeHandler) suggest(w http.ResponseWriter, r *http.Request) {
 	ctxTimeout, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
 
-	outc, errc := h.svc.GetRecipes(ctxTimeout, "chicken")
+	outc, errc, _ := h.svc.GetRecipes(ctxTimeout, "chicken")
 
 	for {
 		select {
@@ -81,7 +81,6 @@ func (h *RecipeHandler) suggest(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "id: %s\ndata: %s\n\n", e.ID, e.Data)
 			time.Sleep(1 * time.Second)
 			flush(w)
-
 		}
 	}
 }

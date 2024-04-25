@@ -13,7 +13,7 @@ func NewRecipe() *Recipe {
 	return &Recipe{}
 }
 
-func (s *Recipe) GetRecipes(_ context.Context, ingredients string) (<-chan []byte, <-chan error) {
+func (s *Recipe) GetRecipes(_ context.Context, ingredients string) (<-chan []byte, <-chan error, error) {
 	outc := make(chan []byte)
 	errc := make(chan error)
 
@@ -29,5 +29,5 @@ func (s *Recipe) GetRecipes(_ context.Context, ingredients string) (<-chan []byt
 		outc <- []byte("[DONE]")
 	}()
 
-	return outc, errc
+	return outc, errc, nil
 }

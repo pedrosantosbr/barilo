@@ -8,7 +8,7 @@ import (
 )
 
 type FakeRecipeService struct {
-	GetRecipesStub        func(context.Context, string) (<-chan []byte, <-chan error)
+	GetRecipesStub        func(context.Context, string) (<-chan []byte, <-chan error, error)
 	getRecipesMutex       sync.RWMutex
 	getRecipesArgsForCall []struct {
 		arg1 context.Context
@@ -17,16 +17,18 @@ type FakeRecipeService struct {
 	getRecipesReturns struct {
 		result1 <-chan []byte
 		result2 <-chan error
+		result3 error
 	}
 	getRecipesReturnsOnCall map[int]struct {
 		result1 <-chan []byte
 		result2 <-chan error
+		result3 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeRecipeService) GetRecipes(arg1 context.Context, arg2 string) (<-chan []byte, <-chan error) {
+func (fake *FakeRecipeService) GetRecipes(arg1 context.Context, arg2 string) (<-chan []byte, <-chan error, error) {
 	fake.getRecipesMutex.Lock()
 	ret, specificReturn := fake.getRecipesReturnsOnCall[len(fake.getRecipesArgsForCall)]
 	fake.getRecipesArgsForCall = append(fake.getRecipesArgsForCall, struct {
@@ -41,9 +43,9 @@ func (fake *FakeRecipeService) GetRecipes(arg1 context.Context, arg2 string) (<-
 		return stub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
 func (fake *FakeRecipeService) GetRecipesCallCount() int {
@@ -52,7 +54,7 @@ func (fake *FakeRecipeService) GetRecipesCallCount() int {
 	return len(fake.getRecipesArgsForCall)
 }
 
-func (fake *FakeRecipeService) GetRecipesCalls(stub func(context.Context, string) (<-chan []byte, <-chan error)) {
+func (fake *FakeRecipeService) GetRecipesCalls(stub func(context.Context, string) (<-chan []byte, <-chan error, error)) {
 	fake.getRecipesMutex.Lock()
 	defer fake.getRecipesMutex.Unlock()
 	fake.GetRecipesStub = stub
@@ -65,17 +67,18 @@ func (fake *FakeRecipeService) GetRecipesArgsForCall(i int) (context.Context, st
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeRecipeService) GetRecipesReturns(result1 <-chan []byte, result2 <-chan error) {
+func (fake *FakeRecipeService) GetRecipesReturns(result1 <-chan []byte, result2 <-chan error, result3 error) {
 	fake.getRecipesMutex.Lock()
 	defer fake.getRecipesMutex.Unlock()
 	fake.GetRecipesStub = nil
 	fake.getRecipesReturns = struct {
 		result1 <-chan []byte
 		result2 <-chan error
-	}{result1, result2}
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeRecipeService) GetRecipesReturnsOnCall(i int, result1 <-chan []byte, result2 <-chan error) {
+func (fake *FakeRecipeService) GetRecipesReturnsOnCall(i int, result1 <-chan []byte, result2 <-chan error, result3 error) {
 	fake.getRecipesMutex.Lock()
 	defer fake.getRecipesMutex.Unlock()
 	fake.GetRecipesStub = nil
@@ -83,12 +86,14 @@ func (fake *FakeRecipeService) GetRecipesReturnsOnCall(i int, result1 <-chan []b
 		fake.getRecipesReturnsOnCall = make(map[int]struct {
 			result1 <-chan []byte
 			result2 <-chan error
+			result3 error
 		})
 	}
 	fake.getRecipesReturnsOnCall[i] = struct {
 		result1 <-chan []byte
 		result2 <-chan error
-	}{result1, result2}
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeRecipeService) Invocations() map[string][][]interface{} {
