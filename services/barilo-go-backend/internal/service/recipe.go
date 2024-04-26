@@ -2,12 +2,25 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"time"
 )
 
+type TextGenerator interface {
+	GenerateCompletions(ctx context.Context, messages string) (<-chan []byte, <-chan error)
+}
+
+type ImageGenerator interface {
+	GenerateImage(ctx context.Context, message string) (string, error)
+}
+
+type PromptGateway interface {
+	TextGenerator
+	ImageGenerator
+}
+
 // Service is a struct that defines the service
-type Recipe struct{}
+type Recipe struct {
+	pg PromptGateway
+}
 
 // NewRecipe creates a new Recipe service
 func NewRecipe() *Recipe {
@@ -15,25 +28,6 @@ func NewRecipe() *Recipe {
 }
 
 func (s *Recipe) GetRecipes(_ context.Context, ingredients string) (<-chan []byte, <-chan error, error) {
-	outc := make(chan []byte)
-	errc := make(chan error)
-
-	go func() {
-		defer close(outc)
-		defer close(errc)
-
-		eventId := 1
-		for i := 0; i < 10; i++ {
-			if i == 1 {
-				errc <- fmt.Errorf("error processing event %d", eventId)
-				break
-			}
-			outc <- []byte(fmt.Sprintf("Event %d: %s", eventId, ingredients))
-			eventId++
-			time.Sleep(2 * time.Second)
-		}
-		outc <- []byte("[DONE]")
-	}()
-
+	outc, errc := s.pg.GenerateCompletions(context.Background(), ingredients)
 	return outc, errc, nil
 }

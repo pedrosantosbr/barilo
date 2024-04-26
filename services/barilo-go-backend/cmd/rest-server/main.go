@@ -11,6 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	libopenai "barilo/lib/openai"
+
+	"barilo/internal/openai"
 	"barilo/internal/rest"
 	"barilo/internal/service"
 
@@ -122,7 +125,9 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 	}
 
 	//-
-	svc := service.NewRecipe()
+	client := libopenai.NewOpenAIClient(os.Getenv("OPENAI_API_KEY"))
+	cb := openai.NewOpenAIChatBot(client)
+	svc := service.NewRecipe(cb)
 	rest.NewRecipeHandler(svc).Register(router)
 
 	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second})

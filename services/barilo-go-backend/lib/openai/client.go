@@ -14,40 +14,59 @@ import (
 const openaiEndpoint = "https://api.openai.com/v1/chat/completions"
 
 // A struct to represent the chat message request
-type ChatMessage struct {
+type chatMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
 
 // A struct to represent the chat completion request
-type ChatCompletionRequest struct {
+type chatCompletionRequest struct {
 	Model    string        `json:"model"`
-	Messages []ChatMessage `json:"messages"`
+	Messages []chatMessage `json:"messages"`
 	Stream   bool          `json:"stream"`
 }
 
-func NewChatCompletionRequest(apiKey string, chatRequest *ChatCompletionRequest) (*http.Request, error) {
-	body, err := json.Marshal(chatRequest)
-	if err != nil {
-		return nil, err
-	}
+type OpenAIClient struct {
+	apiKey string
+}
 
-	req, err := http.NewRequest("POST", openaiEndpoint, bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
-	req.Header.Set("Content-Type", "application/json")
-
-	return req, nil
+func NewOpenAIClient(apiKey string) *OpenAIClient {
+	return &OpenAIClient{apiKey: apiKey}
 }
 
 // Handling streaming responses
-func HandleStreamResponse(ctx context.Context, resp *http.Response) (<-chan []byte, <-chan error) {
+func (o *OpenAIClient) HandleStreamResponse(ctx context.Context, message string) (<-chan []byte, <-chan error) {
+	chanErr := make(chan error)
+	defer close(chanErr)
+
+	req, err := newChatCompletionRequest(o.apiKey, &chatCompletionRequest{
+		Model: "gpt-3.5-turbo",
+		Messages: []chatMessage{
+			{
+				Role:    "system",
+				Content: "You are a helpful assistant.",
+			},
+			{
+				Role:    "user",
+				Content: message,
+			},
+		},
+		Stream: true,
+	})
+
+	if err != nil {
+		chanErr <- err
+		return nil, chanErr
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		chanErr <- err
+		return nil, chanErr
+	}
+
 	reader := bufio.NewReader(resp.Body)
 
-	chanErr := make(chan error)
 	chanOut := make(chan []byte)
 
 	go func() {
@@ -102,4 +121,21 @@ func HandleStreamResponse(ctx context.Context, resp *http.Response) (<-chan []by
 	}()
 
 	return chanOut, chanErr
+}
+
+func newChatCompletionRequest(apiKey string, chatRequest *chatCompletionRequest) (*http.Request, error) {
+	body, err := json.Marshal(chatRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", openaiEndpoint, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	req.Header.Set("Content-Type", "application/json")
+
+	return req, nil
 }
