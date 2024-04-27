@@ -1,23 +1,52 @@
+import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
 function App() {
-  const newEventSource = () => {
-    const es = new EventSource("http://localhost:9234/api/recipes/suggestions");
-    es.onopen = () => console.log(">>> Connection opened!");
-    es.onerror = (e) => {
-      // log error
-      console.log("ERROR!", e);
-      es.close(); // Close the connection on error
-    };
-    es.onmessage = (e) => {
-      console.log(e);
-      if (e.data === "[DONE]") {
-        console.log("Closing connection");
-        es.close();
+  const [message, setMessage] = useState("");
+
+  const renderStreamResponse = (newMessage) => {
+    setMessage((prevMessage) => prevMessage + newMessage);
+  };
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:9234/api/v1/recipes/suggestions",
+        {
+          method: "POST",
+          headers: {
+            Accept: "text/event-stream",
+          },
+        }
+      );
+
+      // -
+
+      await (async function () {
+        if (response.ok && response.status == 200) {
+          console.log("Connection made", response);
+        } else if (
+          response.status >= 400 &&
+          response.status < 500 &&
+          response.status !== 429
+        ) {
+          console.log("Client side error", response);
+        }
+      })();
+
+      // -
+
+      const reader = response.body.getReader();
+      let result = new Uint8Array();
+      while (!(result = await reader.read()).done) {
+        const text = new TextDecoder("utf-8").decode(result.value);
+        renderStreamResponse(text);
       }
-    };
+    } catch (error) {
+      console.log(":: error:", error);
+    }
   };
 
   return (
@@ -32,14 +61,12 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={newEventSource}>Submit</button>
+        <button onClick={fetchRecipes}>Submit</button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <p className="read-the-docs">{message}</p>
     </>
   );
 }

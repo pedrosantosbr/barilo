@@ -16,6 +16,6 @@ func NewOpenAITextGenerator(client *libopenai.OpenAIClient) *OpenAITextGenerator
 }
 
 // GetCompletions returns a channel of bytes and a channel of errors
-func (c *OpenAITextGenerator) GetCompletions(ctx context.Context, message string) (<-chan []byte, <-chan error) {
+func (c *OpenAITextGenerator) GenerateCompletions(ctx context.Context, message string) (<-chan []byte, <-chan error, error) {
 	return c.client.HandleStreamResponse(ctx, message)
 }

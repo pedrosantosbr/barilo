@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 // OpenAI's chat completion endpoint
@@ -26,6 +25,10 @@ type chatCompletionRequest struct {
 	Stream   bool          `json:"stream"`
 }
 
+type APIError struct {
+	Error string `json:"error"`
+}
+
 type OpenAIClient struct {
 	apiKey string
 }
@@ -35,12 +38,11 @@ func NewOpenAIClient(apiKey string) *OpenAIClient {
 }
 
 // Handling streaming responses
-func (o *OpenAIClient) HandleStreamResponse(ctx context.Context, message string) (<-chan []byte, <-chan error) {
+func (o *OpenAIClient) HandleStreamResponse(ctx context.Context, message string) (<-chan []byte, <-chan error, error) {
 	chanErr := make(chan error)
-	defer close(chanErr)
 
 	req, err := newChatCompletionRequest(o.apiKey, &chatCompletionRequest{
-		Model: "gpt-3.5-turbo",
+		Model: "gpt-3.5-turbo-0125",
 		Messages: []chatMessage{
 			{
 				Role:    "system",
@@ -48,21 +50,23 @@ func (o *OpenAIClient) HandleStreamResponse(ctx context.Context, message string)
 			},
 			{
 				Role:    "user",
-				Content: message,
+				Content: "What is the recipe for a cake?",
 			},
 		},
 		Stream: true,
 	})
-
 	if err != nil {
-		chanErr <- err
-		return nil, chanErr
+		return nil, nil, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		chanErr <- err
-		return nil, chanErr
+		return nil, nil, err
+	}
+
+	// TODO: Handle error response
+	if resp.StatusCode != http.StatusOK {
+		return nil, nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	reader := bufio.NewReader(resp.Body)
@@ -78,49 +82,76 @@ func (o *OpenAIClient) HandleStreamResponse(ctx context.Context, message string)
 
 		for {
 			line, err := reader.ReadBytes('\n')
-
 			if err != nil {
+				if err.Error() == "EOF" {
+					return
+				}
+
 				chanErr <- err
 				return
 			}
 
 			if len(line) == 0 {
-				break
+				return
 			}
 
-			lineStr := strings.TrimSpace(string(line))
-
-			if !strings.HasPrefix(lineStr, "data: ") {
-				continue
-			}
-
-			lineStr = strings.TrimPrefix(lineStr, "data: ")
-			if lineStr == "[DONE]" {
-				break
-			}
-
-			var response map[string]interface{}
-			if err := json.Unmarshal([]byte(lineStr), &response); err != nil {
-				chanErr <- err
-				break
-			}
-
-			choices, ok := response["choices"].([]interface{})
-			if !ok {
-				chanErr <- fmt.Errorf("failed to parse choices")
-				break
-			}
-
-			for _, choice := range choices {
-				content, ok := choice.(map[string]interface{})["delta"].(map[string]interface{})["content"].(string)
-				if ok {
-					chanOut <- []byte(content)
-				}
-			}
+			chanOut <- line
 		}
 	}()
 
-	return chanOut, chanErr
+	// go func() {
+	// 	defer func() {
+	// 		resp.Body.Close()
+	// 		close(chanOut)
+	// 		close(chanErr)
+	// 	}()
+
+	// 	for {
+	// 		line, err := reader.ReadBytes('\n')
+
+	// 		if err != nil {
+	// 			chanErr <- err
+	// 			return
+	// 		}
+
+	// 		if len(line) == 0 {
+	// 			break
+	// 		}
+
+	// 		lineStr := strings.TrimSpace(string(line))
+
+	// 		if !strings.HasPrefix(lineStr, "data: ") {
+	// 			continue
+	// 		}
+
+	// 		lineStr = strings.TrimPrefix(lineStr, "data: ")
+	// 		if lineStr == "[DONE]" {
+	// 			break
+	// 		}
+
+	// 		var response map[string]interface{}
+	// 		if err := json.Unmarshal([]byte(lineStr), &response); err != nil {
+	// 			chanErr <- err
+	// 			break
+	// 		}
+
+	// 		choices, ok := response["choices"].([]interface{})
+	// 		if !ok {
+	// 			chanErr <- fmt.Errorf("failed to parse choices")
+	// 			break
+	// 		}
+
+	// 		for _, choice := range choices {
+	// 			content, ok := choice.(map[string]interface{})["delta"].(map[string]interface{})["content"].(string)
+	// 			if ok {
+	// 				fmt.Println(content)
+	// 				chanOut <- []byte(content)
+	// 			}
+	// 		}
+	// 	}
+	// }()
+
+	return chanOut, chanErr, nil
 }
 
 func newChatCompletionRequest(apiKey string, chatRequest *chatCompletionRequest) (*http.Request, error) {

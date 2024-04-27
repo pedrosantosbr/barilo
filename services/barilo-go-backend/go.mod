@@ -13,7 +13,9 @@ require (
 require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/go-pkgz/expirable-cache v0.0.3 // indirect
+	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 )

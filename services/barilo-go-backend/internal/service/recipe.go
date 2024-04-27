@@ -5,7 +5,7 @@ import (
 )
 
 type TextGenerator interface {
-	GenerateCompletions(ctx context.Context, messages string) (<-chan []byte, <-chan error)
+	GenerateCompletions(ctx context.Context, message string) (<-chan []byte, <-chan error, error)
 }
 
 type ImageGenerator interface {
@@ -19,15 +19,22 @@ type PromptGateway interface {
 
 // Service is a struct that defines the service
 type Recipe struct {
-	pg PromptGateway
+	gtw PromptGateway
 }
 
 // NewRecipe creates a new Recipe service
-func NewRecipe() *Recipe {
-	return &Recipe{}
+func NewRecipe(tg TextGenerator, ig ImageGenerator) *Recipe {
+	gtw := struct {
+		TextGenerator
+		ImageGenerator
+	}{tg, ig}
+
+	return &Recipe{
+		gtw: gtw,
+	}
 }
 
-func (s *Recipe) GetRecipes(_ context.Context, ingredients string) (<-chan []byte, <-chan error, error) {
-	outc, errc := s.pg.GenerateCompletions(context.Background(), ingredients)
-	return outc, errc, nil
+func (s *Recipe) GetRecipes(ctx context.Context, ingredients string) (<-chan []byte, <-chan error, error) {
+	outc, errc, err := s.gtw.GenerateCompletions(ctx, ingredients)
+	return outc, errc, err
 }

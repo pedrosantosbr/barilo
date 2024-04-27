@@ -125,9 +125,10 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 	}
 
 	//-
+
 	client := libopenai.NewOpenAIClient(os.Getenv("OPENAI_API_KEY"))
-	cb := openai.NewOpenAIChatBot(client)
-	svc := service.NewRecipe(cb)
+	tg := openai.NewOpenAITextGenerator(client)
+	svc := service.NewRecipe(tg, nil)
 	rest.NewRecipeHandler(svc).Register(router)
 
 	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second})
