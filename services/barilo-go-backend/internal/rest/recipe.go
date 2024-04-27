@@ -59,6 +59,8 @@ func (h *RecipeHandler) suggest(w http.ResponseWriter, r *http.Request) {
 	outc, errc, err := h.svc.GetRecipes(ctxTimeout, "What is the recipe for a cake?")
 	if err != nil {
 		logger.Error("error: ", zap.Error(err))
+
+		// TODO: create a new function to handle errors: renderError(w, err)
 		http.Error(w, fmt.Sprintf("error: %s\n", err.Error()), http.StatusInternalServerError)
 		return
 	}
@@ -66,6 +68,7 @@ func (h *RecipeHandler) suggest(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-ctxTimeout.Done():
+			// TODO: create a new function to handle errors: renderError(w, err)
 			http.Error(w, "error: ERR_TIMEOUT\n", http.StatusRequestTimeout)
 			return
 
@@ -76,6 +79,7 @@ func (h *RecipeHandler) suggest(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			// TODO: create a new function to handle errors: renderError(w, err)
 			http.Error(w, fmt.Sprintf("error: %s\n", err.Error()), http.StatusInternalServerError)
 			return
 

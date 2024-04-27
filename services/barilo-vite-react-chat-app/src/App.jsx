@@ -2,15 +2,24 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import { getBytes, getLines, getMessages } from "./fetch";
+
+const LastEventId = "last-event-id";
 
 function App() {
   const [message, setMessage] = useState("");
 
   const renderStreamResponse = (newMessage) => {
+    // console.log(newMessage);
     setMessage((prevMessage) => prevMessage + newMessage);
   };
 
   const fetchRecipes = async () => {
+    /**
+     * @type {Record<string, string>}
+     */
+    const headers = {};
+
     try {
       const response = await fetch(
         "http://localhost:9234/api/v1/recipes/suggestions",
@@ -38,12 +47,26 @@ function App() {
 
       // -
 
-      const reader = response.body.getReader();
-      let result = new Uint8Array();
-      while (!(result = await reader.read()).done) {
-        const text = new TextDecoder("utf-8").decode(result.value);
-        renderStreamResponse(text);
-      }
+      await getBytes(
+        response.body,
+        getLines(
+          getMessages(
+            (id) => {
+              if (id) {
+                // store the id and send it back on the next retry:
+                headers[LastEventId] = id;
+              } else {
+                // don't send the last-event-id header anymore:
+                delete headers[LastEventId];
+              }
+            },
+            (retry) => {
+              console.log(":: retry:", retry);
+            },
+            renderStreamResponse
+          )
+        )
+      );
     } catch (error) {
       console.log(":: error:", error);
     }
