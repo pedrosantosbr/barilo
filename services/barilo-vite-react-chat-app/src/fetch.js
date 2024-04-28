@@ -3,7 +3,7 @@ export const ControlChars = {
   NewLine: 10,
   CariageReturn: 13,
   Space: 32,
-  Colon: 38,
+  Colon: 58,
 };
 
 /**
@@ -17,7 +17,6 @@ export function getLines(onLine) {
    * @type {Uint8Array|undefined}
    */
   let buffer = undefined;
-
   let position = 0;
   let fieldLength = 0;
   let discardTrailingNewline = false;
@@ -95,9 +94,7 @@ export function getMessages(onId, onRetry, onMessage) {
    * @param {number} fieldLength The length of the field in the line buffer.
    */
   return function onLine(line, fieldLength) {
-    console.log(line);
     if (line.length == 0) {
-      console.log(":: length 0");
       // empty line denotes end of message. Trigger the callback and start a new message:
       onMessage?.(message);
       message = newMessage();
@@ -105,14 +102,15 @@ export function getMessages(onId, onRetry, onMessage) {
       // exclude comments and lines with no values
       // line is of format "<field>:<value>" or "<field>: <value>"
       // https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation
-      console.log("::", field, value);
 
       const field = decoder.decode(line.subarray(0, fieldLength));
       const valueOffset =
         fieldLength + (line[fieldLength + 1] === ControlChars.Space ? 2 : 1);
       const value = decoder.decode(line.subarray(valueOffset));
-
+      
       switch (field) {
+        case "error":
+          break;
         case "data":
           // if this message already has data, append the new value to the old.
           // otherwise, just set to the new value:

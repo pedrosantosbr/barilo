@@ -10,8 +10,17 @@ function App() {
   const [message, setMessage] = useState("");
 
   const renderStreamResponse = (newMessage) => {
-    // console.log(newMessage);
-    setMessage((prevMessage) => prevMessage + newMessage);
+    let { data } = newMessage;
+    const chunks = data.split("\n");
+    chunks.map((chunk) => {
+      if (chunk) {
+        const conversation = JSON.parse(chunk);
+        conversation.choices.map((choice) => {
+
+          setMessage((prevMessage) => prevMessage + choice.delta.content);
+        })
+      } 
+    });
   };
 
   const fetchRecipes = async () => {
