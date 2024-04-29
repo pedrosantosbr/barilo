@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./App.css";
 import { getBytes, getLines, getMessages } from "./fetch";
 import { Button } from "./components/ui/button";
 
@@ -9,13 +8,31 @@ function App() {
   const [message, setMessage] = useState("");
 
   const renderStreamResponse = (newMessage) => {
+    console.log(`🔭 rendering stream response`);
     let { data } = newMessage;
+    if (data === "[DONE]") {
+      return;
+    }
+    console.log(`🔭 data`, data);
+
     const chunks = data.split("\n");
     chunks.map((chunk) => {
       if (chunk) {
         const conversation = JSON.parse(chunk);
         conversation.choices.map((choice) => {
-          setMessage((prevMessage) => prevMessage + choice.delta.content);
+          /**
+           * @type {string}
+           */
+          let message = choice.delta.content;
+
+          const formatMessage = () => {
+            console.log(`🔭 formatting message`, message);
+            if (message !== null && message !== undefined && message !== "") {
+              return message.replace(/\n/g, "<br>");
+            }
+            return message;
+          };
+          setMessage((prevMessage) => prevMessage + formatMessage(message));
         });
       }
     });
@@ -80,16 +97,16 @@ function App() {
   };
 
   return (
-    <>
+    <div className="container p-20">
       <h1>Barilo</h1>
+      <p
+        className="read-the-docs text-left"
+        dangerouslySetInnerHTML={{ __html: message }}
+      ></p>
       <div className="card">
-        <Button onClick={fetchRecipes}>Submit</Button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+        <Button onClick={fetchRecipes}>Get recipes</Button>
       </div>
-      <p className="read-the-docs">{message}</p>
-    </>
+    </div>
   );
 }
 
