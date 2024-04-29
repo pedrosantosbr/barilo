@@ -1,8 +1,7 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import { getBytes, getLines, getMessages } from "./fetch";
+import { Button } from "./components/ui/button";
 
 const LastEventId = "last-event-id";
 
@@ -16,10 +15,9 @@ function App() {
       if (chunk) {
         const conversation = JSON.parse(chunk);
         conversation.choices.map((choice) => {
-
           setMessage((prevMessage) => prevMessage + choice.delta.content);
-        })
-      } 
+        });
+      }
     });
   };
 
@@ -83,17 +81,9 @@ function App() {
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+      <h1>Barilo</h1>
       <div className="card">
-        <button onClick={fetchRecipes}>Submit</button>
+        <Button onClick={fetchRecipes}>Submit</Button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
