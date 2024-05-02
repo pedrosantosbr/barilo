@@ -1,13 +1,33 @@
 # Barilo
 
-Evite o disperdício de dinheiro e comida, use o que você já tem em casa!
+### Architecture
 
-## Topics I want to learn
-
-- [] integration tests
-- [] service layer
-- [] logging and OpenTelemetry
-- [] CI/CD
-- [] test containers
-- [] using some data storage to save the responses
-- [] How to create recipes images?
+```mermaid
+---
+title: Barilo
+---
+classDiagram
+  User
+  Assistant
+  Thread
+  Message
+  
+  User "1" o-- "1...*" Thread
+  Thread "1" o-- "1...*" Message  
+    
+  class User {
+    -id : string
+    -phoneNumber: string
+  }
+  class Assistant {
+    -id : string
+  }
+  class Thread {
+    -id : string
+  }
+  class Message {
+    -id : string
+    -threadId: string : fk
+    -content: JSON
+  }
+```

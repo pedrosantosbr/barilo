@@ -2,7 +2,9 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -36,6 +38,8 @@ func NewRecipeHandler(svc RecipeService) *RecipeHandler {
 func (h *RecipeHandler) Register(r *chi.Mux) {
 	r.Post("/api/v1/recipes/suggestions", h.suggest)
 	r.Post("/api/v1/recipes", h.create)
+	r.Get("/webhook/whatsapp", h.whatsappCallback)
+	r.Post("/webhook/whatsapp", h.whatsappConversation)
 }
 
 func (h *RecipeHandler) suggest(w http.ResponseWriter, r *http.Request) {
@@ -174,4 +178,73 @@ func flush(w http.ResponseWriter) {
 		return
 	}
 	flusher.Flush()
+}
+
+// -
+
+type message struct {
+	Field string `json:"field"`
+	Value struct {
+		MessagingProduct string `json:"messaging_product"`
+		Metadata         struct {
+			DisplayPhoneNumber string `json:"display_phone_number"`
+			PhoneNumberID      string `json:"phone_number_id"`
+		} `json:"metadata"`
+		Contacts []struct {
+			Profile struct {
+				Name string `json:"name"`
+			} `json:"profile"`
+			WaID string `json:"wa_id"`
+		} `json:"contacts"`
+		Messages []struct {
+			From      string `json:"from"`
+			ID        string `json:"id"`
+			Timestamp string `json:"timestamp"`
+			Type      string `json:"type"`
+			Text      struct {
+				Body string `json:"body"`
+			} `json:"text"`
+		} `json:"messages"`
+	} `json:"value"`
+}
+
+func (h *RecipeHandler) whatsappCallback(w http.ResponseWriter, r *http.Request) {
+	// return 200
+	w.WriteHeader(http.StatusOK)
+
+	params := r.URL.Query()
+
+	hubChallenge := params.Get("hub.challenge")
+
+	if hubChallenge != "" {
+		w.Write([]byte(hubChallenge))
+		return
+	}
+}
+
+func (h *RecipeHandler) whatsappConversation(w http.ResponseWriter, r *http.Request) {
+	// Read the body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body",
+			http.StatusInternalServerError)
+		return
+	}
+
+	// Unmarshal into a map
+	var bodyMap map[string]interface{}
+	err = json.Unmarshal(body, &bodyMap)
+	if err != nil {
+		http.Error(w, "Error unmarshalling request body",
+			http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	// Print the map
+	for key, value := range bodyMap {
+		fmt.Printf("Key: %s, Value: %v\n", key, value)
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
