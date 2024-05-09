@@ -8,10 +8,17 @@ import (
 	"io"
 	"net/http"
 
+	"barilo/internal/domain"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
 )
+
+type PromotionService interface {
+	IngestPromotions(promotions string) error
+	ListAllPromotions() ([]domain.Promotion, error)
+}
 
 // PromotionHandler...
 type PromotionHandler struct {
@@ -39,11 +46,20 @@ type CreatePromotionResponse struct {
 	PromotionID string `json:"promotion_id"`
 }
 
+// Creates product promotions for a given store
 func (ph *PromotionHandler) create(w http.ResponseWriter, r *http.Request) {
 	// Validate request method (should be POST)
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintf(w, "Method not allowed: %s", r.Method)
+		return
+	}
+
+	// Checking body doesn't exceed memory size limit
+	// Also parsing req body to multipart form to get the files
+	err := r.ParseMultipartForm(MaxInMemorySize)
+	if err != nil {
+		handleError(w, r, http.StatusBadRequest, "Error parsing form data: %s", err)
 		return
 	}
 
@@ -53,13 +69,6 @@ func (ph *PromotionHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-
-	// Parse multipart form data
-	err := r.ParseMultipartForm(MaxInMemorySize)
-	if err != nil {
-		handleError(w, r, http.StatusBadRequest, "Error parsing form data: %s", err)
-		return
-	}
 
 	// Get the uploaded image file
 	file, _, err := r.FormFile("image")
@@ -100,6 +109,10 @@ func (ph *PromotionHandler) create(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, http.StatusInternalServerError, "Error generating content: %v", err)
 		return
 	}
+
+	// check if file is formatted correctly
+	// save them in batch into the database
+	// return successfully
 
 	// Write the response back to the client
 	w.Header().Set("Content-Type", "application/json")
