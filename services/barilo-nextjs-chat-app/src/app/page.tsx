@@ -1,21 +1,74 @@
-import PromptChatApp from "@/components/PromptChatApp";
+import { Button } from "@/components/ui/button";
+import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
+
+import Cooker3D from "@/assets/img/cooker-3d.png";
+import MegaPhone3D from "@/assets/img/megaphone-3d.png";
+import ShoppingCart3D from "@/assets/img/shopping-cart-3d.png";
+import Image from "next/image";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen overflow-y-auto flex-col items-center justify-between pb-40">
-      <div className="grid grid-cols-12 gap-6">
-        <aside className="col-span-3"></aside>
-        <div className="col-span-6">
-          <div className="mb-10 mt-10">
-            <p
-              className="font-bold text-3xl text-gray-700"
-              style={{ lineHeight: 1.5 }}
-            >
-              Evite disperdício de alimentos e crie receitas incríveis.
-            </p>
+    <main className="flex min-h-screen overflow-y-auto flex-col items-center justify-center pb-40">
+      <div className="container space-y-10">
+        <div className="text-center text-5xl font-bold">
+          Em que posso te ajudar hoje?
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+            <div className="border rounded-md shadow-sm p-6 space-y-2">
+              <div className="justify-center flex w-[180px] h-[150px] mx-auto">
+                <Image src={Cooker3D} alt="Cooker 3D" className="w-full" />
+              </div>
+              <h1 className="text-xl font-bold">Receitas</h1>
+              <p className="text-gray-500">
+                Crie receitas incríveis e evite o desperdício de alimentos
+                utilizando apenas os ingredientes que você tem em casa.
+              </p>
+              <Button variant={"link"} className="w-full">
+                Ver receitas <ArrowLongRightIcon className="ml-2 w-5" />
+              </Button>
+            </div>
           </div>
-
-          <PromptChatApp />
+          <div className="lg:col-span-1">
+            <div className="border rounded-md shadow-sm p-6 space-y-2">
+              <div className="justify-center flex h-[150px] mx-auto">
+                <Image
+                  src={ShoppingCart3D}
+                  alt="Shopping Cart 3D"
+                  width={150}
+                  height={80}
+                />
+              </div>
+              <h1 className="text-xl font-bold">Compras</h1>
+              <p className="text-gray-500">
+                Compare o preço dos produtos em diferentes supermercados e
+                escolha onde fazer a sua compra do mês.
+              </p>
+              <Button variant={"link"} className="w-full">
+                Simular compra <ArrowLongRightIcon className="ml-2 w-5" />
+              </Button>
+            </div>
+          </div>
+          <div className="lg:col-span-1">
+            <div className="border rounded-md shadow-sm p-6 space-y-2">
+              <div className="justify-center flex h-[150px] mx-auto">
+                <Image
+                  src={MegaPhone3D}
+                  alt="Megaphone 3D"
+                  width={150}
+                  height={80}
+                />
+              </div>
+              <h1 className="text-xl font-bold">Encartes</h1>
+              <p className="text-gray-500">
+                Descubra as promoções da semana e crie um comparativo de preços
+                entre os supermercados da sua região.
+              </p>
+              <Button variant={"link"} className="w-full">
+                Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </main>

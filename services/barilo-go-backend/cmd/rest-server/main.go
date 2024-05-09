@@ -120,16 +120,39 @@ type serverConfig struct {
 func newServer(conf *serverConfig) (*http.Server, error) {
 	router := chi.NewRouter()
 
+	// handle cors
+	corsMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+			// if r.Method == http.MethodOptions {
+			// 	w.WriteHeader(http.StatusNoContent)
+			// 	return
+			// }
+
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	router.Use(corsMiddleware)
+
 	for _, mw := range conf.Middlewares {
 		router.Use(mw)
 	}
 
 	//-
 
-	client := libopenai.NewOpenAIClient(os.Getenv("OPENAI_API_KEY"))
-	tg := openai.NewOpenAITextGenerator(client)
-	svc := service.NewRecipe(tg, nil)
-	rest.NewRecipeHandler(svc).Register(router)
+	openaiCli := libopenai.NewOpenAIClient(os.Getenv("OPENAI_API_KEY"))
+	tg := openai.NewOpenAITextGenerator(openaiCli)
+	rcpSvc := service.NewRecipe(tg, nil)
+
+	// -
+
+	rest.NewRecipeHandler(rcpSvc).Register(router)
+	rest.NewGroceryHandler().Register(router)
 
 	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second})
 
