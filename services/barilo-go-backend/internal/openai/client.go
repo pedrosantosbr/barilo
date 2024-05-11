@@ -1,8 +1,9 @@
 package openai
 
 import (
-	libopenai "barilo/lib/openai"
 	"context"
+
+	libopenai "github.com/pedrosantosbr/barilo/lib/openai"
 )
 
 // Implementation of ChatBot interface...

@@ -1,0 +1,7 @@
+# For demo purposes only. See "METRICS_TRACES_LOGGING.md" for more context.
+
+scrape_configs:
+- job_name: barilo-api
+  scrape_interval: 5s
+  static_configs:
+  - targets: ['host.docker.internal:9234']

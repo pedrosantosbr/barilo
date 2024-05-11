@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	libopenai "barilo/lib/openai"
+	libopenai "github.com/pedrosantosbr/barilo/lib/openai"
 
-	"barilo/internal/openai"
-	"barilo/internal/rest"
-	"barilo/internal/service"
+	"github.com/pedrosantosbr/barilo/internal/openai"
+	"github.com/pedrosantosbr/barilo/internal/rest"
+	"github.com/pedrosantosbr/barilo/internal/service"
 
 	"github.com/didip/tollbooth/v6"
 	"github.com/didip/tollbooth/v6/limiter"
@@ -127,11 +127,6 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
-
-			// if r.Method == http.MethodOptions {
-			// 	w.WriteHeader(http.StatusNoContent)
-			// 	return
-			// }
 
 			next.ServeHTTP(w, r)
 		})

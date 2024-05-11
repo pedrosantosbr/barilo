@@ -1,8 +1,6 @@
 package rest_test
 
 import (
-	"barilo/internal/rest"
-	"barilo/internal/rest/resttesting"
 	"bufio"
 	"context"
 	"io"
@@ -10,6 +8,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/pedrosantosbr/barilo/internal/rest"
+	"github.com/pedrosantosbr/barilo/internal/rest/resttesting"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"

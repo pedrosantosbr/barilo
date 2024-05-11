@@ -2,7 +2,7 @@
 package resttesting
 
 import (
-	"barilo/internal/rest"
+	"github.com/pedrosantosbr/barilo/internal/rest"
 	"context"
 	"sync"
 )
