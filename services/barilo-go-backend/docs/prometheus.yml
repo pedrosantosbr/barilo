@@ -1,7 +1,8 @@
-# For demo purposes only. See "METRICS_TRACES_LOGGING.md" for more context.
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
 
 scrape_configs:
-- job_name: barilo-api
-  scrape_interval: 5s
-  static_configs:
-  - targets: ['host.docker.internal:9234']
+  - job_name: 'otel-collector'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['otel-collector:9090']

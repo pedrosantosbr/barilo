@@ -1,7 +1,7 @@
 services:
   # barilo-web:
   #   container_name: barilo-web
-  #   build: 
+  #   build:
   #     context: ./services/barilo-nextjs-chat-app
   #     dockerfile: Dockerfile
   #   ports:
@@ -10,37 +10,45 @@ services:
   #     - NODE_ENV=development
 
   barilo-api:
-    container_name: barilo-api
     build:
       context: ./services/barilo-go-backend
       dockerfile: ./build/rest-server/Dockerfile
     ports:
-      - "1500:1500"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - 9234:9234
+      - 2223:2223
+    depends_on:
+      - vault
 
-  barilo-prometheus:
-    container_name: barilo-prometheus
-    image: prom/prometheus:v2.40.7
+  prometheus:
+    image: prom/prometheus:v2.52.0
     ports:
-      - "9090:9090"
+      - 9090:9090
     volumes:
       - ./services/barilo-go-backend/docs/prometheus.yml:/etc/prometheus/prometheus.yml
 
-  barilo-jaeger:
-    container_name: barilo-jaeger
-    image: jaegertracing/all-in-one:1.40.0
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
     ports:
-      - "16686:16686"
-      - "14268:14268"
+      - 16686:16686
 
-  barilo-vault:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.100.0
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./services/barilo-go-backend/docs/otel-collector.yaml:/etc/otel-collector.yaml
+    ports:
+      - 4317:4317
+
+  vault:
     container_name: barilo-vault
     image: vault:1.12.4
     ports:
-      - "8300:8300"
+      - 8300:8300
     cap_add:
       - IPC_LOCK
     environment:
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
-      VAULT_DEV_ROOT_TOKEN_ID:  "myroot"
+      VAULT_DEV_ROOT_TOKEN_ID: "myroot"
+
+volumes:
+  prom_data:
