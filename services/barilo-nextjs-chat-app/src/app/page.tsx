@@ -25,9 +25,9 @@ export default function Home() {
                 Crie receitas incríveis e evite o desperdício de alimentos
                 utilizando apenas os ingredientes que você tem em casa.
               </p>
-              <Button variant={"link"} className="w-full">
-                Ver receitas <ArrowLongRightIcon className="ml-2 w-5" />
-              </Button>
+              <Link href={"/offers"} className="w-full flex items-center">
+                Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
+              </Link>
             </div>
           </div>
           <div className="lg:col-span-1">
@@ -45,9 +45,9 @@ export default function Home() {
                 Compare o preço dos produtos em diferentes supermercados e
                 escolha onde fazer a sua compra do mês.
               </p>
-              <Button variant={"link"} className="w-full">
-                Simular compra <ArrowLongRightIcon className="ml-2 w-5" />
-              </Button>
+              <Link href={"/offers"} className="w-full flex items-center">
+                Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
+              </Link>
             </div>
           </div>
           <div className="lg:col-span-1">
