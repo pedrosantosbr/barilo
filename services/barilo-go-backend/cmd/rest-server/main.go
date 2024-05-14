@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,17 +12,28 @@ import (
 	"syscall"
 	"time"
 
-	libopenai "barilo/lib/openai"
+	libopenai "github.com/pedrosantosbr/barilo/lib/openai"
+	"github.com/pedrosantosbr/barilo/lib/tracing"
+	"github.com/pedrosantosbr/barilo/lib/vault"
 
-	"barilo/internal/openai"
-	"barilo/internal/rest"
-	"barilo/internal/service"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	domain "github.com/pedrosantosbr/barilo/internal"
+	"github.com/pedrosantosbr/barilo/internal/envvar"
+	"github.com/pedrosantosbr/barilo/internal/openai"
+	"github.com/pedrosantosbr/barilo/internal/rest"
+	"github.com/pedrosantosbr/barilo/internal/service"
 
 	"github.com/didip/tollbooth/v6"
 	"github.com/didip/tollbooth/v6/limiter"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 	"go.uber.org/zap"
 )
+
+const otelName = "github.com/pedrosantosbr/barilo/internal/service"
 
 func main() {
 	var env, address string
@@ -30,7 +42,7 @@ func main() {
 	flag.StringVar(&address, "address", ":9234", "HTTP Server Address")
 	flag.Parse()
 
-	errC, err := run(address)
+	errC, err := run(env, address)
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}
@@ -40,11 +52,24 @@ func main() {
 	}
 }
 
-func run(address string) (<-chan error, error) {
+func run(env, address string) (<-chan error, error) {
 	logger, err := zap.NewProduction()
 	if err != nil {
 		return nil, errors.New("zap logger failed to instanciate")
 	}
+
+	if err := envvar.Load(env); err != nil {
+		return nil, domain.WrapErrorf(err, domain.ErrorCodeUnknown, "envvar.Load")
+	}
+
+	vault, err := vault.NewVaultProvider()
+	if err != nil {
+		return nil, domain.WrapErrorf(err, domain.ErrorCodeUnknown, "internal.NewVaultProvider")
+	}
+
+	conf := envvar.New(vault)
+
+	// -
 
 	logging := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -58,14 +83,6 @@ func run(address string) (<-chan error, error) {
 	}
 
 	// -
-	srv, err := newServer(&serverConfig{
-		Address:     address,
-		Middlewares: []func(next http.Handler) http.Handler{logging},
-		Logger:      logger,
-	})
-	if err != nil {
-		return nil, errors.New("newServer failed to start")
-	}
 
 	errC := make(chan error, 1)
 
@@ -73,6 +90,27 @@ func run(address string) (<-chan error, error) {
 		os.Interrupt,
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
+
+	// Setup OpenTelemetry SDK.
+	otelShutdown, err := tracing.NewOTExporter(ctx, conf)
+	if err != nil {
+		return nil, domain.WrapErrorf(err, domain.ErrorCodeUnknown, "tracing.NewOTExporter")
+	}
+
+	srv, err := newServer(&serverConfig{
+		Address:     address,
+		Middlewares: []func(next http.Handler) http.Handler{logging},
+		Logger:      logger,
+		ctx:         ctx,
+	})
+	if err != nil {
+		return nil, errors.New("newServer failed to start")
+	}
+
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
 
 	go func() {
 		<-ctx.Done()
@@ -115,11 +153,11 @@ type serverConfig struct {
 	Address     string
 	Middlewares []func(next http.Handler) http.Handler
 	Logger      *zap.Logger
+	ctx         context.Context
 }
 
 func newServer(conf *serverConfig) (*http.Server, error) {
 	router := chi.NewRouter()
-
 	// handle cors
 	corsMiddleware := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -127,11 +165,6 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
-
-			// if r.Method == http.MethodOptions {
-			// 	w.WriteHeader(http.StatusNoContent)
-			// 	return
-			// }
 
 			next.ServeHTTP(w, r)
 		})
@@ -143,7 +176,7 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 		router.Use(mw)
 	}
 
-	//-
+	// -
 
 	openaiCli := libopenai.NewOpenAIClient(os.Getenv("OPENAI_API_KEY"))
 	tg := openai.NewOpenAITextGenerator(openaiCli)
@@ -153,6 +186,33 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 
 	rest.NewRecipeHandler(rcpSvc).Register(router)
 	rest.NewGroceryHandler().Register(router)
+
+	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		tracer := otel.Tracer(otelName)
+
+		commonAttrs := []attribute.KeyValue{
+			attribute.String("attrA", "chocolate"),
+			attribute.String("attrB", "raspberry"),
+			attribute.String("attrC", "vanilla"),
+		}
+
+		ctx, span := tracer.Start(
+			r.Context(),
+			"work",
+			trace.WithAttributes(commonAttrs...))
+		defer span.End()
+
+		for i := 0; i < 10; i++ {
+			_, iSpan := tracer.Start(ctx, fmt.Sprintf("worker-%d", i))
+			log.Printf("Doing really hard work (%d / 10)\n", i+1)
+
+			<-time.After(time.Second)
+			iSpan.End()
+		}
+
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, map[string]string{"status": "ok"})
+	})
 
 	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second})
 

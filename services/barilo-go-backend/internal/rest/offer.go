@@ -8,46 +8,46 @@ import (
 	"io"
 	"net/http"
 
-	"barilo/internal/domain"
+	"github.com/pedrosantosbr/barilo/internal/domain"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
 )
 
-type PromotionService interface {
-	IngestPromotions(promotions string) error
-	ListAllPromotions() ([]domain.Promotion, error)
+type OfferService interface {
+	IngestOffers(offers string) error
+	ListAllOffers() ([]domain.Offer, error)
 }
 
-// PromotionHandler...
-type PromotionHandler struct {
+// OfferHandler...
+type OfferHandler struct {
 }
 
-// NewPromotionHandler...
-func NewPromotionHandler() *PromotionHandler {
-	return &PromotionHandler{}
+// NewOfferHandler...
+func NewOfferHandler() *OfferHandler {
+	return &OfferHandler{}
 }
 
-func (ph *PromotionHandler) Register(r *chi.Mux) {
-	r.Post("/api/v1/promotions/create", ph.create) // ingest daily
+func (ph *OfferHandler) Register(r *chi.Mux) {
+	r.Post("/api/v1/offers/create", ph.create) // ingest daily
 }
 
 // -
 
-type CreatePromotionRequest struct {
+type CreateOffersRequest struct {
 	StoreName    string  `json:"store_name"`
 	StoreAddress string  `json:"store_address"`
 	StorePhone   *string `json:"store_phone"`
 	Image        string  `json:"image"`
 }
 
-type CreatePromotionResponse struct {
-	PromotionID string `json:"promotion_id"`
+type CreateOffersResponse struct {
+	OfferID string `json:"offer_id"`
 }
 
-// Creates product promotions for a given store
-func (ph *PromotionHandler) create(w http.ResponseWriter, r *http.Request) {
+// Creates product offers for a given store
+func (ph *OfferHandler) create(w http.ResponseWriter, r *http.Request) {
 	// Validate request method (should be POST)
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -63,7 +63,7 @@ func (ph *PromotionHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req CreatePromotionRequest
+	var req CreateOffersRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handleError(w, r, http.StatusBadRequest, "Error decoding request: %s", err)
 		return

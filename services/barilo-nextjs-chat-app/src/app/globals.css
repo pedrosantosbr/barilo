@@ -76,7 +76,7 @@
 }
 
 .price-promo {
-  @apply bg-red-600 p-1 font-bold text-white text-xs;
+  @apply text-red-600 p-1 font-bold;
   white-space: nowrap;
 }
 

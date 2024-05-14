@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import cn from "classnames";
-import { CookieIcon } from "@radix-ui/react-icons";
+import { CookieIcon, HomeIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
+import { Megaphone, SquareActivity } from "lucide-react";
+import { MegaphoneIcon } from "@heroicons/react/24/solid";
 
 const dm = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -28,6 +31,22 @@ export default function RootLayout({
           <div className="font-extrabold flex items-center text-2xl text-slate-700">
             <CookieIcon className="w-8 h-8 mr-2" />
             Barilo
+          </div>
+          <div className="ml-auto">
+            <nav>
+              <ul className="flex space-x-4">
+                <li>
+                  <Link href="/" className="flex items-center">
+                    <HomeIcon className="mr-2 w-4" /> Menu inicial
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/offers" className="flex items-center">
+                    <Megaphone className="mr-2 w-4" /> Ofertas
+                  </Link>
+                </li>
+              </ul>
+            </nav>
           </div>
         </header>
         {children}
