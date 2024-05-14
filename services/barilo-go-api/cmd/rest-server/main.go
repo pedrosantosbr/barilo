@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pedrosantosbr/barilo/lib/tracing"
 	"github.com/pedrosantosbr/barilo/lib/vault"
 
@@ -21,6 +22,10 @@ import (
 
 	domain "github.com/pedrosantosbr/barilo/internal"
 	"github.com/pedrosantosbr/barilo/internal/envvar"
+	frameworkpostgresql "github.com/pedrosantosbr/barilo/internal/postgresql"
+	"github.com/pedrosantosbr/barilo/internal/rest"
+	"github.com/pedrosantosbr/barilo/internal/services"
+	"github.com/pedrosantosbr/barilo/lib/postgresql"
 
 	"github.com/didip/tollbooth/v6"
 	"github.com/didip/tollbooth/v6/limiter"
@@ -65,6 +70,13 @@ func run(env, address string) (<-chan error, error) {
 
 	conf := envvar.New(vault)
 
+	//
+
+	pgxpool, err := postgresql.NewPostgreSQL(conf)
+	if err != nil {
+		return nil, domain.WrapErrorf(err, domain.ErrorCodeUnknown, "postgresql.NewPostgreSQL")
+	}
+
 	// -
 
 	logging := func(h http.Handler) http.Handler {
@@ -98,6 +110,7 @@ func run(env, address string) (<-chan error, error) {
 		Middlewares: []func(next http.Handler) http.Handler{logging},
 		Logger:      logger,
 		ctx:         ctx,
+		DB:          pgxpool,
 	})
 	if err != nil {
 		return nil, errors.New("newServer failed to start")
@@ -150,6 +163,7 @@ type serverConfig struct {
 	Middlewares []func(next http.Handler) http.Handler
 	Logger      *zap.Logger
 	ctx         context.Context
+	DB          *pgxpool.Pool
 }
 
 func newServer(conf *serverConfig) (*http.Server, error) {
@@ -172,8 +186,16 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 		router.Use(mw)
 	}
 
-	// -
+	// - register repositories
+	storeRepo := frameworkpostgresql.NewStore(conf.DB)
 
+	// - register services
+	storeSvc := services.NewStore(storeRepo)
+
+	// - register controllers handlers
+	rest.NewStoreHandler(storeSvc).Register(router)
+
+	// -
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		tracer := otel.Tracer(otelName)
 

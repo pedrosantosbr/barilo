@@ -9,7 +9,35 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const InsertStore = `-- name: InsertStore :one
+INSERT INTO stores (
+  name,
+  address,
+  phone
+)
+VALUES (
+  $1,
+  $2,
+  $3
+)
+RETURNING id
+`
+
+type InsertStoreParams struct {
+	Name    string
+	Address string
+	Phone   pgtype.Text
+}
+
+func (q *Queries) InsertStore(ctx context.Context, arg InsertStoreParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, InsertStore, arg.Name, arg.Address, arg.Phone)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
 
 const SelectStore = `-- name: SelectStore :one
 SELECT
