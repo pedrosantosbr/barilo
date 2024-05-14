@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)"
+source ${REPO_ROOT}/devops/scripts/helpers
+
+info "Running migrations..."
+
+tern migrate \
+    --migrations "${REPO_ROOT}/services/barilo-go-api-service/internal/postgresql/migrations/" \
+    --conn-string "postgres://root:barilo@localhost:5432/barilo?sslmode=disable"
