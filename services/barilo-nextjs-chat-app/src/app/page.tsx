@@ -45,7 +45,7 @@ export default function Home() {
                 Compare o preço dos produtos em diferentes supermercados e
                 escolha onde fazer a sua compra do mês.
               </p>
-              <Link href={"/offers"} className="w-full flex items-center">
+              <Link href={"/shopping"} className="w-full flex items-center">
                 Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
               </Link>
             </div>

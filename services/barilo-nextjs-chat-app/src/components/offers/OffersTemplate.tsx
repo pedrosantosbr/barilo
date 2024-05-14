@@ -82,7 +82,7 @@ const data: StoreWithOffers[] = [
   },
 ];
 
-export function OffersList() {
+export function OffersTemplate() {
   const [filters, setFilters] = useState<Filters>({
     lowerPrice: false,
   });
