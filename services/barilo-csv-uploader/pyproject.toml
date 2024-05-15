@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "barilo-csv-uploader"
+version = "0.1.0"
+description = ""
+authors = ["Pedro Santos <pedro357bm@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ruff = "^0.4.4"
+fastapi = "^0.111.0"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

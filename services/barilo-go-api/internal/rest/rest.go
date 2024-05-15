@@ -2,6 +2,7 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -9,12 +10,15 @@ import (
 	"github.com/pedrosantosbr/barilo/internal"
 )
 
+var MaxInMemorySize int64 = 1024 * 1024 * 500 // 500MB default
+
 type ErrorResponse struct {
 	Error       string            `json:"error"`
 	Validations validation.Errors `json:"validations,omitempty"`
 }
 
 func renderErrorResponse(w http.ResponseWriter, r *http.Request, msg string, err error) {
+	fmt.Println(err.Error())
 	resp := ErrorResponse{Error: msg}
 	status := http.StatusInternalServerError
 
@@ -33,7 +37,7 @@ func renderErrorResponse(w http.ResponseWriter, r *http.Request, msg string, err
 				resp.Validations = verrors
 			}
 		case internal.ErrorCodeConflict:
-			status = http.StatusContinue
+			status = http.StatusConflict
 		case internal.ErrorCodeUnknown:
 			fallthrough
 		default:

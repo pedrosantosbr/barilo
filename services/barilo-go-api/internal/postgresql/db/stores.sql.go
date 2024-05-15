@@ -48,12 +48,24 @@ SELECT
 FROM
   stores
 WHERE
-  id = $1
+  id = $1 
+  OR
+  ( 
+    name = $2 
+    AND
+    address = $3 
+  )
 LIMIT 1
 `
 
-func (q *Queries) SelectStore(ctx context.Context, id uuid.UUID) (Stores, error) {
-	row := q.db.QueryRow(ctx, SelectStore, id)
+type SelectStoreParams struct {
+	ID      uuid.UUID
+	Name    string
+	Address string
+}
+
+func (q *Queries) SelectStore(ctx context.Context, arg SelectStoreParams) (Stores, error) {
+	row := q.db.QueryRow(ctx, SelectStore, arg.ID, arg.Name, arg.Address)
 	var i Stores
 	err := row.Scan(
 		&i.ID,

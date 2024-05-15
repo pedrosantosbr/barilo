@@ -7,7 +7,13 @@ SELECT
 FROM
   stores
 WHERE
-  id = @id
+  id = @id 
+  OR
+  ( 
+    name = @name 
+    AND
+    address = @address 
+  )
 LIMIT 1;
 
 -- name: InsertStore :one

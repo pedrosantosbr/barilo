@@ -2,7 +2,10 @@ package postgresql
 
 import (
 	"context"
+	"errors"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/pedrosantosbr/barilo/internal"
 	"github.com/pedrosantosbr/barilo/internal/postgresql/db"
@@ -33,5 +36,34 @@ func (s *Store) Create(ctx context.Context, params internal.CreateStoreParams) (
 		Name:    params.Name,
 		Address: params.Address,
 		Phone:   params.Phone,
+	}, nil
+}
+
+func (s *Store) Find(ctx context.Context, params internal.FindStoreParams) (internal.Store, error) {
+	var query db.SelectStoreParams
+
+	if params.ID != nil {
+		query.ID = uuid.MustParse(*params.ID)
+	}
+	if params.Name != nil {
+		query.Name = *params.Name
+	}
+	if params.Address != nil {
+		query.Address = *params.Address
+	}
+
+	res, err := s.q.SelectStore(ctx, query)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return internal.Store{}, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "store not found")
+		}
+		return internal.Store{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "q.SelectStore")
+	}
+
+	return internal.Store{
+		ID:      res.ID.String(),
+		Name:    res.Name,
+		Address: res.Address,
+		Phone:   res.Phone.String,
 	}, nil
 }

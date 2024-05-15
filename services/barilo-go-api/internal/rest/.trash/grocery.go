@@ -16,7 +16,6 @@ import (
 )
 
 // MaxInMemorySize sets the maximum size of the image allowed in memory (in bytes)
-var MaxInMemorySize int64 = 1024 * 1024 * 5 // 5MB default
 
 // GroceryService interface defines all methods a GroceryService should implement
 type GroceryService interface {
