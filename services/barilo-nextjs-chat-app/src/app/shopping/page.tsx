@@ -13,12 +13,12 @@ export default function Shopping() {
             <ShoppingSimulatorForm />
             <div className="shopping-list mt-12 space-y-4">
               <ShoppingSimulatorResult
-                storeName="Supermercado Royal"
+                storeName="Supermercado Pérola"
                 bestOffer
                 total={122.23}
               />
               <ShoppingSimulatorResult
-                storeName="Supermercado Pérola"
+                storeName="Supermercado Royal"
                 total={140.05}
               />
               <ShoppingSimulatorResult

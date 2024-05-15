@@ -46,7 +46,7 @@ export default function Home() {
                 escolha onde fazer a sua compra do mês.
               </p>
               <Link href={"/shopping"} className="w-full flex items-center">
-                Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
+                Fazer uma cotação <ArrowLongRightIcon className="ml-2 w-5" />
               </Link>
             </div>
           </div>
