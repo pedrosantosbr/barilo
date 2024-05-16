@@ -2,7 +2,6 @@ package rest
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -18,7 +17,6 @@ type ErrorResponse struct {
 }
 
 func renderErrorResponse(w http.ResponseWriter, r *http.Request, msg string, err error) {
-	fmt.Println(err.Error())
 	resp := ErrorResponse{Error: msg}
 	status := http.StatusInternalServerError
 

@@ -8,10 +8,12 @@ import (
 	"io"
 	"net/http"
 	"runtime"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 	"github.com/pedrosantosbr/barilo/internal"
+	"github.com/pedrosantosbr/barilo/lib/logging"
+	"go.uber.org/zap"
 )
 
 const uuidRegEx string = `[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`
@@ -20,6 +22,19 @@ type Store struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
 	Address string `json:"address"`
+}
+
+type Product struct {
+	ID   string  `json:"id"`
+	GTIN *string `json:"gtin"`
+	// StoreID        string  `json:"store_id"`
+	Name           string  `json:"name"`
+	Category       string  `json:"category"`
+	Price          float64 `json:"price"`
+	Weight         string  `json:"weight"`
+	ExpirationDate string  `json:"expiration_date"`
+	Ingredients    string  `json:"ingredients"`
+	Brand          *string `json:"brand"`
 }
 
 type StoreService interface {
@@ -107,6 +122,12 @@ func (sh *StoreHandler) create(w http.ResponseWriter, r *http.Request) {
 
 // Uploads products for a given store
 func (sh *StoreHandler) uploadProducts(w http.ResponseWriter, r *http.Request) {
+	var products []internal.Product
+
+	logger, _ := zap.NewProduction()
+	ctx := r.Context()
+	ctx = logging.WithLogger(ctx, logger)
+
 	err := r.ParseMultipartForm(MaxInMemorySize)
 	if err != nil {
 		renderErrorResponse(w, r, "error parsing form data", err)
@@ -121,39 +142,32 @@ func (sh *StoreHandler) uploadProducts(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	reader := csv.NewReader(file)
+	reader.Read() // skip header
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			renderErrorResponse(w, r, "error reading csv file", err)
+			logger.Info("error reading csv file", zap.Error(err))
+			renderErrorResponse(w, r, "error reading csv file", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error reading csv file"))
 			return
 		}
 
-		rowLenght := len(record)
-		if rowLenght != 3 {
-			renderErrorResponse(w, r, "invalid csv file", internal.NewErrorf(internal.ErrorCodeInvalidArgument, "invalid csv file"))
-			continue
-		}
-
-		// need to check the record length
-		var product internal.Product
-		product.Name = record[0]
-
-		price, err := strconv.ParseFloat(record[0], 64)
+		// -
+		product := internal.Product{}
+		err = product.FromCSV(ctx, record)
 		if err != nil {
-			price = 0
+			// renderErrorResponse(w, r, "error parsing csv row", err)
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, map[string]string{"error": err.Error()})
+			return
 		}
-
-		product.Price = price
-		product.Unit = record[2]
-
-		fmt.Printf("Product: %v\n", product)
+		products = append(products, product)
 	}
 
 	printMemoryStats()
-	renderResponse(w, r, nil, http.StatusOK)
+	renderResponse(w, r, &products, http.StatusOK)
 }
 
 func printMemoryStats() {
