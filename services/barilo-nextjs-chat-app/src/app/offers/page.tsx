@@ -1,4 +1,4 @@
-import { OffersTemplate } from "@/components/offers/OffersTemplate";
+import { OffersTemplate } from "@/components/offers/offers-template";
 
 export default function Offers() {
   return (

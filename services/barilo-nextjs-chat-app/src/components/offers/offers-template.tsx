@@ -3,6 +3,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
 import { ChangeEvent, FC, FormEventHandler, useMemo, useState } from "react";
+import {
+  offersRank,
+  offersSamples,
+  ProductOfferIndex,
+  StoreOffersIndex,
+} from "@/data/offers-samples";
+import { OffersRankList } from "./offers-rank-list";
 
 type Offer = {
   product: string;
@@ -94,29 +101,36 @@ export function OffersTemplate() {
     }));
   };
 
-  const filteredOffers = useMemo(() => {
-    if (filters.lowerPrice) {
-      return data.filter((storeWithOffers) => {
-        return storeWithOffers.offers.some((offer) => {
-          return offer.lowerPrice === true;
-        });
-      });
-    }
-    return data;
-  }, [filters.lowerPrice]);
+  // const filteredOffers = useMemo(() => {
+  //   if (filters.lowerPrice) {
+  //     return data.filter((storeWithOffers) => {
+  //       return storeWithOffers.offers.some((offer) => {
+  //         return offer.lowerPrice === true;
+  //       });
+  //     });
+  //   }
+  //   return data;
+  // }, [filters.lowerPrice]);
 
   return (
     <div className="space-y-12">
       <OffersFilter filters={filters} handleFilterChange={handleFilterChange} />
       <div className="grid grid-cols-3 gap-8">
-        {filteredOffers.map((storeWithOffers) => (
-          <Offers
+        {/* {filteredOffers.map((storeWithOffers) => (
+          <OffersList
             key={storeWithOffers.store}
             offers={storeWithOffers}
             filters={filters}
           />
+        ))} */}
+        {offersSamples.map((storeWithOffers, idx) => (
+          <OffersList key={idx} offers={storeWithOffers} filters={filters} />
         ))}
       </div>
+      <hr />
+
+      {/* Rank of Offers grouped by product name and weight */}
+      <OffersRankList offers={offersRank} />
     </div>
   );
 }
@@ -170,35 +184,46 @@ export function LowerPriceFilterCheckbox({
   );
 }
 
-type OffersProps = {
-  offers: StoreWithOffers;
+type OffersListProps = {
+  offers: StoreOffersIndex;
   filters: Filters;
 };
-const Offers: FC<OffersProps> = ({
-  offers: { store, address, offers },
+const OffersList: FC<OffersListProps> = ({
+  offers: { name, address, offers },
   filters,
 }) => {
-  const applyFilters = (offer: Offer) => {
-    if (filters.lowerPrice) {
-      return offer.lowerPrice === true;
-    }
-    return true;
-  };
+  // const applyFilters = (offer: Offer) => {
+  //   if (filters.lowerPrice) {
+  //     return offer.lowerPrice === true;
+  //   }
+  //   return true;
+  // };
 
   return (
     <div className="p-2 flex flex-col">
-      <h4 className="text-lg font-bold">{store}</h4>
+      <h4 className="text-lg font-bold">{name}</h4>
       <p className="text-sm text-gray-500">{address}</p>
       <ul className="mt-4 text-sm space-y-2">
-        {offers.filter(applyFilters).map((offer) => (
-          <li key={offer.product} className="flex justify-between">
-            <span>{offer.product}</span>
-            <kbd className="font-bold bg-gray-200 px-2">
-              R$ {offer.price.toFixed(2)}
-            </kbd>
-          </li>
+        {/* {offers.filter(applyFilters).map((offer) => (
+          <OfferItem key={offer.product} offer={offer} />
+        ))} */}
+        {offers.map((offer, idx) => (
+          <OfferItem key={idx} offer={offer} />
         ))}
       </ul>
     </div>
   );
 };
+
+type OfferItemProps = {
+  key: number;
+  offer: ProductOfferIndex;
+};
+
+const OfferItem: FC<OfferItemProps> = ({ offer, key }) => (
+  <li key={key} className="flex justify-between items-start hover:bg-amber-200">
+    <span className="">{offer.name}</span>
+    <div className=""></div>
+    <kbd className="price-promo">R$ {offer.price.toFixed(2)}</kbd>
+  </li>
+);
