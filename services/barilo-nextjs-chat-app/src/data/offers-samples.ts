@@ -182,7 +182,7 @@ export type OffersGroupedByProductNameAndWeight = {
   offers: ProductOfferIndex[]
 }
 
-export const offersRank: OffersGroupedByProductNameAndWeight[] = [
+export const offerRankDataSet: OffersGroupedByProductNameAndWeight[] = [
   {
     title: "Ervilha Pramesa 2kg",
     offers: [
@@ -246,6 +246,14 @@ export const offersRank: OffersGroupedByProductNameAndWeight[] = [
   {
     title: "Leite em pó Ninho integral instantâneo 800g",
     offers: [
+      { 
+        store: "Supermercado Pérola",
+        name: "Leite em pó Ninho integral instantâneo 800g", 
+        price: 13.29, 
+        brand: "Ninho", 
+        weight: "800g",
+        categories: [5]
+      },
       { 
         store: "Mercado Donana",
         name: "Leite em pó Ninho integral instantâneo 800g", 

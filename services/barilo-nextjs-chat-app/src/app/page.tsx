@@ -21,11 +21,11 @@ export default function Home() {
                 <Image src={Cooker3D} alt="Cooker 3D" className="w-full" />
               </div>
               <h1 className="text-xl font-bold">Receitas</h1>
-              <p className="text-gray-500">
+              <p className="font-medium text-sm">
                 Crie receitas incríveis e evite o desperdício de alimentos
                 utilizando apenas os ingredientes que você tem em casa.
               </p>
-              <Link href={"/offers"} className="w-full flex items-center">
+              <Link href={"/receitas"} className="w-full flex items-center">
                 Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
               </Link>
             </div>
@@ -41,11 +41,11 @@ export default function Home() {
                 />
               </div>
               <h1 className="text-xl font-bold">Compras</h1>
-              <p className="text-gray-500">
+              <p className="font-medium text-sm">
                 Compare o preço dos produtos em diferentes supermercados e
                 escolha onde fazer a sua compra do mês.
               </p>
-              <Link href={"/shopping"} className="w-full flex items-center">
+              <Link href={"/simulador"} className="w-full flex items-center">
                 Fazer uma cotação <ArrowLongRightIcon className="ml-2 w-5" />
               </Link>
             </div>
@@ -61,11 +61,11 @@ export default function Home() {
                 />
               </div>
               <h1 className="text-xl font-bold">Encartes</h1>
-              <p className="text-gray-500">
+              <p className="font-medium text-sm">
                 Descubra as promoções da semana e crie um comparativo de preços
                 entre os supermercados da sua região.
               </p>
-              <Link href={"/offers"} className="w-full flex items-center">
+              <Link href={"/ofertas"} className="w-full flex items-center">
                 Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
               </Link>
             </div>

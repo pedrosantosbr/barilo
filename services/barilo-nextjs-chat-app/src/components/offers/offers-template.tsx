@@ -2,14 +2,16 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import { ChangeEvent, FC, FormEventHandler, useMemo, useState } from "react";
+import { FC, useState } from "react";
 import {
-  offersRank,
+  offerRankDataSet,
   offersSamples,
   ProductOfferIndex,
   StoreOffersIndex,
 } from "@/data/offers-samples";
-import { OffersRankList } from "./offers-rank-list";
+import { OfferRank } from "./offer-rank";
+import { MapPinIcon, ShoppingBasket } from "lucide-react";
+import Image from "next/image";
 
 type Offer = {
   product: string;
@@ -114,8 +116,14 @@ export function OffersTemplate() {
 
   return (
     <div className="space-y-12">
-      <OffersFilter filters={filters} handleFilterChange={handleFilterChange} />
-      <div className="grid grid-cols-3 gap-8">
+      {/* <OffersFilter filters={filters} handleFilterChange={handleFilterChange} /> */}
+      {/* Rank of Offers grouped by product name and weight */}
+      <div className="text-left text-5xl font-extrabold">Melhores preços</div>
+      <OfferRank offers={offerRankDataSet} />
+
+      <hr />
+      <div className="text-left text-5xl font-extrabold">Encartes</div>
+      <div className="grid sm:grid-cols-4 md:grid-cols-3 gap-4">
         {/* {filteredOffers.map((storeWithOffers) => (
           <OffersList
             key={storeWithOffers.store}
@@ -124,13 +132,12 @@ export function OffersTemplate() {
           />
         ))} */}
         {offersSamples.map((storeWithOffers, idx) => (
-          <OffersList key={idx} offers={storeWithOffers} filters={filters} />
+          <Store key={idx} offers={storeWithOffers} filters={filters} />
+        ))}
+        {offersSamples.map((storeWithOffers, idx) => (
+          <Store key={idx} offers={storeWithOffers} filters={filters} />
         ))}
       </div>
-      <hr />
-
-      {/* Rank of Offers grouped by product name and weight */}
-      <OffersRankList offers={offersRank} />
     </div>
   );
 }
@@ -184,11 +191,11 @@ export function LowerPriceFilterCheckbox({
   );
 }
 
-type OffersListProps = {
+type StoreProps = {
   offers: StoreOffersIndex;
   filters: Filters;
 };
-const OffersList: FC<OffersListProps> = ({
+const Store: FC<StoreProps> = ({
   offers: { name, address, offers },
   filters,
 }) => {
@@ -200,10 +207,18 @@ const OffersList: FC<OffersListProps> = ({
   // };
 
   return (
-    <div className="p-2 flex flex-col">
-      <h4 className="text-lg font-bold">{name}</h4>
-      <p className="text-sm text-gray-500">{address}</p>
-      <ul className="mt-4 text-sm space-y-2">
+    <div className="p-4 flex flex-col bg-background self-start rounded border shadow-md space-y-4">
+      <div>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">{name}</h3>
+          <ShoppingBasket className="text-amber-500 !fill-amber-400 w-10" />
+        </div>
+        <div className="flex items-center">
+          <MapPinIcon className="w-3 mr-2" />
+          <p className="text-sm font-medium">{address}</p>
+        </div>
+      </div>
+      <ul className="mt-4 text-sm">
         {/* {offers.filter(applyFilters).map((offer) => (
           <OfferItem key={offer.product} offer={offer} />
         ))} */}
@@ -211,6 +226,17 @@ const OffersList: FC<OffersListProps> = ({
           <OfferItem key={idx} offer={offer} />
         ))}
       </ul>
+      <div className="flex space-x-2">
+        <div className="border rounded-md w-10 h-10">
+          <Image
+            src="/img/encarte-example.jpg"
+            alt="offer"
+            className="rounded-md w-10 h-10"
+            width={50}
+            height={50}
+          />
+        </div>
+      </div>
     </div>
   );
 };
@@ -220,10 +246,10 @@ type OfferItemProps = {
   offer: ProductOfferIndex;
 };
 
-const OfferItem: FC<OfferItemProps> = ({ offer, key }) => (
-  <li key={key} className="flex justify-between items-start hover:bg-amber-200">
-    <span className="">{offer.name}</span>
-    <div className=""></div>
+const OfferItem: FC<OfferItemProps> = ({ offer }) => (
+  <li className="flex justify-between items-end">
+    <span className="text-sm font-medium">{offer.name}</span>
+    <div className="flex-1 border-b"></div>
     <kbd className="price-promo">R$ {offer.price.toFixed(2)}</kbd>
   </li>
 );
