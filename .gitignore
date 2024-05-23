@@ -1,3 +1,7 @@
 node_modules/
 bin/
 dist/
+.DS_Store
+services/.DS_Store
+services/*/node_modules/
+.pgdata/

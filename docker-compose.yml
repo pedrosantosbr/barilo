@@ -11,20 +11,38 @@ services:
 
   barilo-api:
     build:
-      context: ./services/barilo-go-backend
+      context: ./services/barilo-api
       dockerfile: ./build/rest-server/Dockerfile
     ports:
       - 9234:9234
       - 2223:2223
     depends_on:
       - vault
+      - postgres
+
+  postgres:
+    container_name: barilo-postgres
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: barilo
+      POSTGRES_PASSWORD: barilo
+      POSTGRES_DB: barilo
+    volumes:
+      - .pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "barilo"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   prometheus:
     image: prom/prometheus:v2.52.0
     ports:
       - 9090:9090
     volumes:
-      - ./services/barilo-go-backend/docs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./services/barilo-api/docs/prometheus.yml:/etc/prometheus/prometheus.yml
 
   jaeger:
     image: jaegertracing/all-in-one:1.57
@@ -35,7 +53,7 @@ services:
     image: otel/opentelemetry-collector-contrib:0.100.0
     command: ["--config=/etc/otel-collector.yaml"]
     volumes:
-      - ./services/barilo-go-backend/docs/otel-collector.yaml:/etc/otel-collector.yaml
+      - ./services/barilo-api/docs/otel-collector.yaml:/etc/otel-collector.yaml
     ports:
       - 4317:4317
 
