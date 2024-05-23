@@ -39,7 +39,7 @@ type Product struct {
 
 type StoreService interface {
 	Create(ctx context.Context, params internal.CreateStoreParams) (internal.Store, error)
-	Find(ctx context.Context, params internal.FindStoreParams) (internal.Store, error)
+	Find(ctx context.Context, params internal.FindStoreParams) (*internal.Store, error)
 }
 
 type StoreHandler struct {
@@ -53,6 +53,7 @@ func NewStoreHandler(svc StoreService) *StoreHandler {
 func (sh *StoreHandler) Register(r *chi.Mux) {
 	r.Post("/api/v1/stores", sh.create)
 	r.Post(fmt.Sprintf("/api/v1/stores/{id:%s}/products/upload", uuidRegEx), sh.uploadProducts)
+	r.Post(fmt.Sprintf("/api/v1/stores/{id:%s}/circulars/upload", uuidRegEx), sh.uploadCircular)
 }
 
 // Controllers
@@ -95,7 +96,7 @@ func (sh *StoreHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if exists.ID != "" {
+	if exists != nil {
 		renderErrorResponse(w, r, "store already exists", internal.NewErrorf(internal.ErrorCodeConflict, "store already exists"))
 		return
 	}
@@ -170,6 +171,82 @@ func (sh *StoreHandler) uploadProducts(w http.ResponseWriter, r *http.Request) {
 
 	printMemoryStats()
 	renderResponse(w, r, &products, http.StatusOK)
+}
+
+// Uploads a circular for a given store
+type UploadCircularRequest struct {
+	Name           string `json:"name"`
+	ExpirationDate string `json:"expiration_date"`
+}
+
+func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
+	var req UploadCircularRequest
+
+	// check if store exists
+	storeID := chi.URLParam(r, "id")
+	store, err := sh.svc.Find(r.Context(), internal.FindStoreParams{ID: &storeID})
+	if err != nil {
+		renderErrorResponse(w, r, "error finding store", err)
+		return
+	}
+	if store == nil {
+		renderErrorResponse(w, r, "store not found", internal.NewErrorf(internal.ErrorCodeNotFound, "store not found"))
+		return
+	}
+
+	// Parse and validate form data
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		renderErrorResponse(w, r, "error decoding request", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error decoding request"))
+		return
+	}
+	// req.Name = r.FormValue("name")
+
+	// expirationDate, err := time.Parse(time.DateOnly, r.FormValue("expiration_date"))
+	// if err != nil {
+	// 	renderErrorResponse(w, r, "error parsing expiration date", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error parsing expiration date"))
+	// 	return
+	// }
+	// req.ExpirationDate = expirationDate
+
+	err = r.ParseMultipartForm(1024 * 1024 * 5) // 5MB
+	if err != nil {
+		renderErrorResponse(w, r, "error parsing form data", err)
+		return
+	}
+
+	file, _, err := r.FormFile("circular_csv")
+	if err != nil {
+		renderErrorResponse(w, r, "error getting products file", err)
+		return
+	}
+	defer file.Close()
+
+	// Read and parse CSV file
+	reader := csv.NewReader(file)
+	reader.Read() // skip header
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			renderErrorResponse(w, r, "error reading csv file", err)
+			return
+		}
+
+		// -
+
+		circular := internal.Circular{}
+		product := internal.Product{}
+		product.StoreID = storeID
+		product.Store = store
+
+		err = circular.ProductFromCSV(r.Context(), &product, record)
+		if err != nil {
+			renderErrorResponse(w, r, "error parsing csv row", err)
+			return
+		}
+	}
 }
 
 func printMemoryStats() {

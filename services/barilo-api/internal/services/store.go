@@ -11,12 +11,18 @@ type StoreRepository interface {
 	Find(ctx context.Context, params internal.FindStoreParams) (internal.Store, error)
 }
 
-type Store struct {
-	repo StoreRepository
+type ProductRepository interface {
+	Create(ctx context.Context, params internal.CreateProductParams) (internal.Product, error)
+	Find(ctx context.Context, params internal.FindProductParams) (internal.Product, error)
 }
 
-func NewStore(repo StoreRepository) *Store {
-	return &Store{repo: repo}
+type Store struct {
+	repo        StoreRepository
+	productRepo ProductRepository
+}
+
+func NewStore(repo StoreRepository, productRepo ProductRepository) *Store {
+	return &Store{repo: repo, productRepo: productRepo}
 }
 
 func (s *Store) Create(ctx context.Context, params internal.CreateStoreParams) (internal.Store, error) {
@@ -31,14 +37,22 @@ func (s *Store) Create(ctx context.Context, params internal.CreateStoreParams) (
 	})
 }
 
-func (s *Store) Find(ctx context.Context, params internal.FindStoreParams) (internal.Store, error) {
+func (s *Store) Find(ctx context.Context, params internal.FindStoreParams) (*internal.Store, error) {
 	if err := params.Validate(); err != nil {
-		return internal.Store{}, internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "params.Validate")
+		return &internal.Store{}, internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "params.Validate")
 	}
 
-	return s.repo.Find(ctx, internal.FindStoreParams{
+	store, err := s.repo.Find(ctx, internal.FindStoreParams{
 		ID:      params.ID,
 		Name:    params.Name,
 		Address: params.Address,
 	})
+	if err != nil {
+		return &internal.Store{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "repo.Find")
+	}
+
+	if store.ID == "" {
+		return nil, nil
+	}
+	return &store, nil
 }

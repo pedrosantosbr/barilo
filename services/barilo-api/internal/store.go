@@ -127,6 +127,48 @@ type Circular struct {
 	Images         []*CircularImage
 }
 
+func (d *Circular) ProductFromCSV(ctx context.Context, p *Product, csv []string) error {
+	if len(csv) != 4 {
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid csv row length: [%d]", len(csv))
+	}
+
+	// Product Name
+	name := csv[0]
+	if name == "" {
+		return NewErrorf(ErrorCodeInvalidArgument, "name field is required")
+	}
+	p.Name = csv[0]
+
+	// Brand
+	brand := csv[1]
+	if brand == "" {
+		p.Brand = nil
+	} else {
+		p.Brand = &brand
+	}
+
+	// Weight
+	weight := csv[2]
+	if weight == "" {
+		return NewErrorf(ErrorCodeInvalidArgument, "weight field is required")
+	}
+	p.Weight = weight
+
+	// Price
+	price := csv[3]
+	if price == "" {
+		return NewErrorf(ErrorCodeInvalidArgument, "price field is required")
+	}
+	priceFloat, err := strconv.ParseFloat(csv[3], 64)
+	if err != nil {
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", csv[2])
+	}
+	p.Price = priceFloat
+
+	return nil
+}
+
+// -
 type CircularImage struct {
 	ID         string
 	CircularID string
@@ -138,6 +180,7 @@ type Discount struct {
 	ProductID  string
 	CircularID string
 	Price      float64
+	Product    *Product
 }
 
 func (d *Discount) Validate() error {

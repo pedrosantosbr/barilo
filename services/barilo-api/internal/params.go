@@ -2,6 +2,7 @@ package internal
 
 import (
 	"regexp"
+	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
@@ -53,4 +54,58 @@ func (f FindStoreParams) Validate() error {
 		}
 	}
 	return nil
+}
+
+// -
+
+type CreateProductParams struct {
+	StoreID        string
+	Name           string
+	Price          float64
+	Weight         string
+	ExpirationDate *string
+	Category       *string
+	ImageURL       *string
+	Brand          *string
+	GTIN           *string
+}
+
+func (c CreateProductParams) Validate() error {
+	product := Product{
+		Name:     c.Name,
+		Price:    c.Price,
+		Weight:   c.Weight,
+		Category: c.Category,
+		ImageURL: c.ImageURL,
+		Brand:    c.Brand,
+		GTIN:     c.GTIN,
+	}
+
+	if c.ExpirationDate != nil {
+		expirationDate, err := time.Parse("2006-01-02", *c.ExpirationDate)
+		if err != nil {
+			return validation.Errors{
+				"expiration_date": NewErrorf(ErrorCodeInvalidArgument, "invalid expiration date"),
+			}
+		}
+		expirationDatePointer := &expirationDate
+		product.ExpirationDate = expirationDatePointer
+	}
+
+	if err := validation.Validate(&product); err != nil {
+		return WrapErrorf(err, ErrorCodeInvalidArgument, "validation.Validate")
+	}
+
+	return nil
+}
+
+type FindProductParams struct {
+	ID       *string
+	GTIN     *string
+	StoreID  *string
+	Name     *string
+	Weight   *string
+	Price    *float64
+	Brand    *string
+	Category *string
 }

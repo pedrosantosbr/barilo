@@ -112,3 +112,23 @@ func TestProduct_FromCSV(t *testing.T) {
 		}
 	})
 }
+
+func TestCircular_FromCSV(t *testing.T) {
+	t.Parallel()
+
+	ctx := SetUp()
+
+	t.Run("invalid csv row len", func(t *testing.T) {
+		t.Parallel()
+
+		row := []string{}
+
+		c := internal.Circular{}
+		p := internal.Product{}
+		err := c.ProductFromCSV(ctx, &p, row)
+		if err == nil {
+			t.Fatalf("expected error, got nil")
+		}
+		assert.Contains(t, err.Error(), "invalid csv row length")
+	})
+}
