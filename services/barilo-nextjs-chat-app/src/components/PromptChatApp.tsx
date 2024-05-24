@@ -61,9 +61,8 @@ const PromptChatApp = () => {
     <>
       <PromptChatBubbleList recipe={recipe} loading={loading} />
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white">
+      <div className="fixed bottom-0 left-[250px] right-0 z-50 container">
         <div className="grid grid-cols-12">
-          <div className="col-span-3"></div>
           <div className="col-span-6">
             <div
               className={cn(

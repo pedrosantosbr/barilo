@@ -45,7 +45,9 @@ const formSchema = z.object({
 export function ShoppingSimulatorForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      search: "Leite",
+    },
   });
 
   // 2. Define a submit handler.
@@ -97,38 +99,40 @@ export function ShoppingSimulatorForm() {
       </div>
       {/* selected products */}
       <div className="flex flex-col p-4">
-        <ul className="text-sm">
+        <ul className="text-sm space-y-2">
           <li className="flex items-center">
             <div>
-              <span className="font-bold">2x</span> Leite longa vida integral
+              <span className="font-bold">2x</span> Patinho moído{" "}
+              <kbd className="price">Kg</kbd>
             </div>
-            <div className="px-4 font-bold">
-              <Delete className="w-4" />
-            </div>
+            <div className="px-4 font-bold">❌</div>
           </li>
           <li className="flex items-center">
             <div>
-              <span className="font-bold">1x</span> Arroz Palmares 5kg
+              <span className="font-bold">2x</span> Leite longa vida integral{" "}
+              <kbd className="price">1L</kbd>
             </div>
-            <div className="px-4 font-bold">
-              <Delete className="w-4" />
+            <div className="px-4 font-bold">❌</div>
+          </li>
+          <li className="flex items-center">
+            <div>
+              <span className="font-bold">1x</span> Arroz Palmares{" "}
+              <kbd className="price">5Kg</kbd>
             </div>
+            <div className="px-4 font-bold">❌</div>
           </li>
           <li className="flex items-center">
             <div>
               <span className="font-bold">4x</span> Leite em pó Ninho 400g
+              <kbd className="price">Lata</kbd>
             </div>
-            <div className="px-4 font-bold">
-              <Delete className="w-4" />
-            </div>
+            <div className="px-4 font-bold">❌</div>
           </li>
           <li className="flex items-center">
             <div>
               <span className="font-bold">2kg</span> Linguiça de pernil
             </div>
-            <div className="px-4 font-bold">
-              <Delete className="w-4" />
-            </div>
+            <div className="px-4 font-bold">❌</div>
           </li>
         </ul>
       </div>

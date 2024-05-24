@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)"
+source ${REPO_ROOT}/devops/scripts/helpers
+
+info "Parsing sql to go code..."
+
+cd ${REPO_ROOT}/services/barilo-go-api/internal/postgresql && sqlc generate
