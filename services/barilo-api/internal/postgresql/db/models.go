@@ -29,7 +29,7 @@ type Circulars struct {
 type Products struct {
 	ID             uuid.UUID
 	Name           string
-	Price          pgtype.Numeric
+	Price          int32
 	Weight         string
 	ExpirationDate pgtype.Date
 	Category       pgtype.Text

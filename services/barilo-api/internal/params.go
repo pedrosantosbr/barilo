@@ -61,7 +61,7 @@ func (f FindStoreParams) Validate() error {
 type CreateProductParams struct {
 	StoreID        string
 	Name           string
-	Price          float64
+	Price          uint64
 	Weight         string
 	ExpirationDate *string
 	Category       *string
@@ -105,7 +105,7 @@ type FindProductParams struct {
 	StoreID  *string
 	Name     *string
 	Weight   *string
-	Price    *float64
+	Price    *uint64
 	Brand    *string
 	Category *string
 }

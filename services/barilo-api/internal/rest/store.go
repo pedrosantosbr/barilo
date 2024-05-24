@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"runtime"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -30,7 +31,7 @@ type Product struct {
 	// StoreID        string  `json:"store_id"`
 	Name           string  `json:"name"`
 	Category       string  `json:"category"`
-	Price          float64 `json:"price"`
+	Price          uint64  `json:"price"`
 	Weight         string  `json:"weight"`
 	ExpirationDate string  `json:"expiration_date"`
 	Ingredients    string  `json:"ingredients"`
@@ -40,6 +41,8 @@ type Product struct {
 type StoreService interface {
 	Create(ctx context.Context, params internal.CreateStoreParams) (internal.Store, error)
 	Find(ctx context.Context, params internal.FindStoreParams) (*internal.Store, error)
+	CreateProduct(ctx context.Context, params internal.CreateProductParams) (internal.Product, error)
+	FindProduct(ctx context.Context, params internal.FindProductParams) (*internal.Product, error)
 }
 
 type StoreHandler struct {
@@ -182,6 +185,9 @@ type UploadCircularRequest struct {
 func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 	var req UploadCircularRequest
 
+	//
+	logger := logging.FromContext(r.Context())
+
 	// check if store exists
 	storeID := chi.URLParam(r, "id")
 	store, err := sh.svc.Find(r.Context(), internal.FindStoreParams{ID: &storeID})
@@ -195,18 +201,20 @@ func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse and validate form data
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		renderErrorResponse(w, r, "error decoding request", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error decoding request"))
-		return
-	}
-	// req.Name = r.FormValue("name")
-
-	// expirationDate, err := time.Parse(time.DateOnly, r.FormValue("expiration_date"))
-	// if err != nil {
-	// 	renderErrorResponse(w, r, "error parsing expiration date", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error parsing expiration date"))
+	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	// 	logger.Info("error decoding request", zap.Error(err))
+	// 	renderErrorResponse(w, r, "error decoding request", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error decoding request"))
 	// 	return
 	// }
-	// req.ExpirationDate = expirationDate
+
+	req.Name = r.FormValue("name")
+
+	_, err = time.Parse(time.DateOnly, r.FormValue("expiration_date"))
+	if err != nil {
+		renderErrorResponse(w, r, "error parsing expiration date", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error parsing expiration date"))
+		return
+	}
+	req.ExpirationDate = r.FormValue("expiration_date")
 
 	err = r.ParseMultipartForm(1024 * 1024 * 5) // 5MB
 	if err != nil {
@@ -243,9 +251,40 @@ func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 
 		err = circular.ProductFromCSV(r.Context(), &product, record)
 		if err != nil {
+			logger.Info("error parsing csv row", zap.Error(err))
 			renderErrorResponse(w, r, "error parsing csv row", err)
 			return
 		}
+
+		exists, err := sh.svc.FindProduct(r.Context(), internal.FindProductParams{
+			Name:    &product.Name,
+			Brand:   product.Brand,
+			Weight:  &product.Weight,
+			Price:   &product.Price,
+			StoreID: &storeID,
+		})
+		fmt.Println("Product exists: ", exists, err)
+		if err != nil {
+			renderErrorResponse(w, r, "error finding product", err)
+			return
+		}
+		if exists != nil {
+			fmt.Println("Product already exists")
+			continue
+		}
+
+		// Create product
+		// if _, err = sh.svc.CreateProduct(r.Context(), internal.CreateProductParams{
+		// 	Name:    product.Name,
+		// 	StoreID: product.StoreID,
+		// 	Price:   product.Price,
+		// 	Weight:  product.Weight,
+		// 	Brand:   product.Brand,
+		// }); err != nil {
+		// 	logger.Error("failed to create product", zap.Error(err))
+		// 	renderErrorResponse(w, r, "failed to create product", err)
+		// 	return
+		// }
 	}
 }
 

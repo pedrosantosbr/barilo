@@ -7,9 +7,12 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/pedrosantosbr/barilo/lib/logging"
+	"go.uber.org/zap"
 )
 
 const gtinRegEx = `^\d{13}$`
+const priceRegEx = `^\d{1,6}(\.\d{2})?$`
 
 type Store struct {
 	ID      string
@@ -41,7 +44,7 @@ type Product struct {
 	ID             string
 	StoreID        string
 	Name           string
-	Price          float64
+	Price          uint64
 	Weight         string
 	ExpirationDate *time.Time // TODO: consider to create a new type for dates
 	Category       *string
@@ -110,7 +113,7 @@ func (p *Product) FromCSV(ctx context.Context, csv []string) error {
 	p.ExpirationDate = &expirationDate
 
 	// Price
-	price, err := strconv.ParseFloat(csv[6], 64)
+	price, err := strconv.ParseUint(csv[6], 10, 2)
 	if err != nil {
 		return NewErrorf(ErrorCodeInvalidArgument, "invalid price %s", csv[7])
 	}
@@ -128,6 +131,8 @@ type Circular struct {
 }
 
 func (d *Circular) ProductFromCSV(ctx context.Context, p *Product, csv []string) error {
+	logger := logging.FromContext(ctx)
+
 	if len(csv) != 4 {
 		return NewErrorf(ErrorCodeInvalidArgument, "invalid csv row length: [%d]", len(csv))
 	}
@@ -159,11 +164,22 @@ func (d *Circular) ProductFromCSV(ctx context.Context, p *Product, csv []string)
 	if price == "" {
 		return NewErrorf(ErrorCodeInvalidArgument, "price field is required")
 	}
-	priceFloat, err := strconv.ParseFloat(csv[3], 64)
+	match, err := regexp.MatchString(priceRegEx, price)
 	if err != nil {
-		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", csv[2])
+		logger.Error("regex.MatchString", zap.Error(err))
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", price)
 	}
-	p.Price = priceFloat
+	if !match {
+		logger.Error("error matching price regex", zap.Error(err))
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", price)
+	}
+	floatValue, err := strconv.ParseFloat(price, 64)
+	if err != nil {
+		logger.Error("error parsing string to floatValue", zap.Error(err))
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", csv[3])
+	}
+	uintValue := uint64(floatValue * 100)
+	p.Price = uintValue
 
 	return nil
 }
@@ -179,7 +195,7 @@ type Discount struct {
 	ID         string
 	ProductID  string
 	CircularID string
-	Price      float64
+	Price      uint64
 	Product    *Product
 }
 

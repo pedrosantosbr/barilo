@@ -1,7 +1,7 @@
 CREATE TABLE products (
   id              UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name            VARCHAR(255) NOT NULL,
-  price           DECIMAL(10, 2) NOT NULL,
+  price           INTEGER NOT NULL,
   weight          VARCHAR(255) NOT NULL,
   expiration_date DATE,
   category        VARCHAR(255),

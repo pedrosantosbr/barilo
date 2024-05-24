@@ -56,3 +56,46 @@ func (s *Store) Find(ctx context.Context, params internal.FindStoreParams) (*int
 	}
 	return &store, nil
 }
+
+func (s *Store) CreateProduct(ctx context.Context, params internal.CreateProductParams) (internal.Product, error) {
+	if err := params.Validate(); err != nil {
+		return internal.Product{}, internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "params.Validate")
+	}
+
+	return s.productRepo.Create(ctx, internal.CreateProductParams{
+		Name:           params.Name,
+		StoreID:        params.StoreID,
+		Price:          params.Price,
+		Weight:         params.Weight,
+		ExpirationDate: params.ExpirationDate,
+		Category:       params.Category,
+		ImageURL:       params.ImageURL,
+		Brand:          params.Brand,
+		GTIN:           params.GTIN,
+	})
+}
+
+func (s *Store) FindProduct(ctx context.Context, params internal.FindProductParams) (*internal.Product, error) {
+	// if err := params.Validate(); err != nil {
+	// 	return &internal.Product{}, internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "params.Validate")
+	// }
+
+	product, err := s.productRepo.Find(ctx, internal.FindProductParams{
+		ID:       params.ID,
+		Name:     params.Name,
+		StoreID:  params.StoreID,
+		GTIN:     params.GTIN,
+		Weight:   params.Weight,
+		Brand:    params.Brand,
+		Category: params.Category,
+		Price:    params.Price,
+	})
+	if err != nil {
+		return &internal.Product{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "productRepo.Find")
+	}
+
+	if product.ID == "" {
+		return nil, nil
+	}
+	return &product, nil
+}

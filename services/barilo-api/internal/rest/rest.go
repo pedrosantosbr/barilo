@@ -2,7 +2,6 @@ package rest
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -32,9 +31,7 @@ func renderErrorResponse(w http.ResponseWriter, r *http.Request, msg string, err
 			status = http.StatusBadRequest
 
 			var verrors validation.Errors
-			fmt.Println("checking verrors: ")
 			if errors.As(ierr, &verrors) {
-				fmt.Println("verrors: ", verrors)
 				resp.Validations = verrors
 			}
 		case internal.ErrorCodeConflict:
