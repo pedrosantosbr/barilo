@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"runtime"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -43,6 +42,7 @@ type StoreService interface {
 	Find(ctx context.Context, params internal.FindStoreParams) (*internal.Store, error)
 	CreateProduct(ctx context.Context, params internal.CreateProductParams) (internal.Product, error)
 	FindProduct(ctx context.Context, params internal.FindProductParams) (*internal.Product, error)
+	CreateCircularWithDiscounts(ctx context.Context, params internal.CreateCircularParams) (internal.Circular, error)
 }
 
 type StoreHandler struct {
@@ -182,46 +182,26 @@ type UploadCircularRequest struct {
 	ExpirationDate string `json:"expiration_date"`
 }
 
-func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
-	var req UploadCircularRequest
+type UploadCircularResponse struct {
+	Circular internal.Circular `json:"circular"`
+}
 
-	//
+func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
+	var createCircularParams internal.CreateCircularParams
+	var circular internal.Circular
+
 	logger := logging.FromContext(r.Context())
 
-	// check if store exists
-	storeID := chi.URLParam(r, "id")
-	store, err := sh.svc.Find(r.Context(), internal.FindStoreParams{ID: &storeID})
-	if err != nil {
-		renderErrorResponse(w, r, "error finding store", err)
-		return
-	}
-	if store == nil {
-		renderErrorResponse(w, r, "store not found", internal.NewErrorf(internal.ErrorCodeNotFound, "store not found"))
-		return
-	}
+	// Parse form data
+	createCircularParams.StoreID = chi.URLParam(r, "id")
+	createCircularParams.Name = r.FormValue("name")
+	createCircularParams.ExpirationDate = r.FormValue("expiration_date")
 
-	// Parse and validate form data
-	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-	// 	logger.Info("error decoding request", zap.Error(err))
-	// 	renderErrorResponse(w, r, "error decoding request", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error decoding request"))
-	// 	return
-	// }
-
-	req.Name = r.FormValue("name")
-
-	_, err = time.Parse(time.DateOnly, r.FormValue("expiration_date"))
-	if err != nil {
-		renderErrorResponse(w, r, "error parsing expiration date", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "error parsing expiration date"))
-		return
-	}
-	req.ExpirationDate = r.FormValue("expiration_date")
-
-	err = r.ParseMultipartForm(1024 * 1024 * 5) // 5MB
+	err := r.ParseMultipartForm(1024 * 1024 * 5) // 5MB
 	if err != nil {
 		renderErrorResponse(w, r, "error parsing form data", err)
 		return
 	}
-
 	file, _, err := r.FormFile("circular_csv")
 	if err != nil {
 		renderErrorResponse(w, r, "error getting products file", err)
@@ -229,7 +209,8 @@ func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Read and parse CSV file
+	// Read and parse CSV file into products
+
 	reader := csv.NewReader(file)
 	reader.Read() // skip header
 	for {
@@ -242,50 +223,25 @@ func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// -
-
-		circular := internal.Circular{}
-		product := internal.Product{}
-		product.StoreID = storeID
-		product.Store = store
-
+		var product internal.Product
 		err = circular.ProductFromCSV(r.Context(), &product, record)
 		if err != nil {
 			logger.Info("error parsing csv row", zap.Error(err))
 			renderErrorResponse(w, r, "error parsing csv row", err)
 			return
 		}
-
-		exists, err := sh.svc.FindProduct(r.Context(), internal.FindProductParams{
-			Name:    &product.Name,
-			Brand:   product.Brand,
-			Weight:  &product.Weight,
-			Price:   &product.Price,
-			StoreID: &storeID,
-		})
-		fmt.Println("Product exists: ", exists, err)
-		if err != nil {
-			renderErrorResponse(w, r, "error finding product", err)
-			return
-		}
-		if exists != nil {
-			fmt.Println("Product already exists")
-			continue
-		}
-
-		// Create product
-		// if _, err = sh.svc.CreateProduct(r.Context(), internal.CreateProductParams{
-		// 	Name:    product.Name,
-		// 	StoreID: product.StoreID,
-		// 	Price:   product.Price,
-		// 	Weight:  product.Weight,
-		// 	Brand:   product.Brand,
-		// }); err != nil {
-		// 	logger.Error("failed to create product", zap.Error(err))
-		// 	renderErrorResponse(w, r, "failed to create product", err)
-		// 	return
-		// }
+		createCircularParams.Products = append(createCircularParams.Products, product)
 	}
+
+	circular, err = sh.svc.CreateCircularWithDiscounts(r.Context(), createCircularParams)
+	if err != nil {
+		renderErrorResponse(w, r, "error creating circular", err)
+		return
+	}
+
+	renderResponse(w, r, &UploadCircularResponse{
+		Circular: circular,
+	}, http.StatusCreated)
 }
 
 func printMemoryStats() {

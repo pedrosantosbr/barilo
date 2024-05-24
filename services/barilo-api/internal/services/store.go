@@ -99,3 +99,12 @@ func (s *Store) FindProduct(ctx context.Context, params internal.FindProductPara
 	}
 	return &product, nil
 }
+
+func (s *Store) CreateCircularWithDiscounts(ctx context.Context, params internal.CreateCircularParams) (internal.Circular, error) {
+
+	if err := params.Validate(); err != nil {
+		return internal.Circular{}, internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "params.Validate")
+	}
+	// BRB
+	return internal.Circular{}, nil
+}

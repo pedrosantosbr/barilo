@@ -54,14 +54,15 @@ type Product struct {
 	Store          *Store
 }
 
-func (p *Product) Validate() {
+func (p *Product) Validate() error {
 	if err := validation.ValidateStruct(p,
 		validation.Field(&p.Name, validation.Required),
 		validation.Field(&p.Price, validation.Required),
 		validation.Field(&p.Weight, validation.Required),
 	); err != nil {
-		panic(err)
+		return WrapErrorf(err, ErrorCodeInvalidArgument, "invalid values")
 	}
+	return nil
 }
 
 func (p *Product) FromCSV(ctx context.Context, csv []string) error {
@@ -130,7 +131,19 @@ type Circular struct {
 	Images         []*CircularImage
 }
 
-func (d *Circular) ProductFromCSV(ctx context.Context, p *Product, csv []string) error {
+func (c *Circular) Validate() error {
+	if err := validation.ValidateStruct(c,
+		validation.Field(&c.Name, validation.Required),
+		validation.Field(&c.StoreID, validation.Required),
+		validation.Field(&c.ExpirationDate, validation.Required),
+	); err != nil {
+		return WrapErrorf(err, ErrorCodeInvalidArgument, "invalid values")
+	}
+
+	return nil
+}
+
+func (c *Circular) ProductFromCSV(ctx context.Context, p *Product, csv []string) error {
 	logger := logging.FromContext(ctx)
 
 	if len(csv) != 4 {
