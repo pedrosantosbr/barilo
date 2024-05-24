@@ -21,6 +21,7 @@ func NewStore(d db.DBTX) *Store {
 	return &Store{q: db.New(d)}
 }
 
+// Create a new store.
 func (s *Store) Create(ctx context.Context, params internal.CreateStoreParams) (internal.Store, error) {
 	var phoneVal string
 	if params.Phone != nil {
@@ -47,6 +48,7 @@ func (s *Store) Create(ctx context.Context, params internal.CreateStoreParams) (
 	}, nil
 }
 
+// Find a store by id or (name and address).
 func (s *Store) Find(ctx context.Context, params internal.FindStoreParams) (internal.Store, error) {
 	var query db.SelectStoreParams
 

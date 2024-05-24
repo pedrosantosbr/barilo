@@ -40,8 +40,6 @@ type Product struct {
 type StoreService interface {
 	Create(ctx context.Context, params internal.CreateStoreParams) (internal.Store, error)
 	Find(ctx context.Context, params internal.FindStoreParams) (*internal.Store, error)
-	CreateProduct(ctx context.Context, params internal.CreateProductParams) (internal.Product, error)
-	FindProduct(ctx context.Context, params internal.FindProductParams) (*internal.Product, error)
 	CreateCircularWithDiscounts(ctx context.Context, params internal.CreateCircularParams) (internal.Circular, error)
 }
 
@@ -177,18 +175,24 @@ func (sh *StoreHandler) uploadProducts(w http.ResponseWriter, r *http.Request) {
 }
 
 // Uploads a circular for a given store
+type Circular struct {
+	ID             string `json:"id"`
+	StoreID        string `json:"store_id"`
+	Name           string `json:"name"`
+	ExpirationDate string `json:"expiration_date"`
+}
+
 type UploadCircularRequest struct {
 	Name           string `json:"name"`
 	ExpirationDate string `json:"expiration_date"`
 }
 
 type UploadCircularResponse struct {
-	Circular internal.Circular `json:"circular"`
+	Circular *Circular `json:"circular"`
 }
 
 func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 	var createCircularParams internal.CreateCircularParams
-	var circular internal.Circular
 
 	logger := logging.FromContext(r.Context())
 
@@ -210,7 +214,6 @@ func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Read and parse CSV file into products
-
 	reader := csv.NewReader(file)
 	reader.Read() // skip header
 	for {
@@ -223,24 +226,36 @@ func (sh *StoreHandler) uploadCircular(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Parse products from a circular CSV file with the following columns:
+		// GTIN, Name, Category, Price, Weight, ExpirationDate, Ingredients, Brand
+		// ps: Price is in cents and receives the discount value by default
 		var product internal.Product
-		err = circular.ProductFromCSV(r.Context(), &product, record)
+		err = product.FromCircularCSV(r.Context(), &product, record)
 		if err != nil {
 			logger.Info("error parsing csv row", zap.Error(err))
 			renderErrorResponse(w, r, "error parsing csv row", err)
 			return
 		}
-		createCircularParams.Products = append(createCircularParams.Products, product)
+		product.StoreID = createCircularParams.StoreID
+		createCircularParams.Products = append(createCircularParams.Products, &product)
 	}
 
-	circular, err = sh.svc.CreateCircularWithDiscounts(r.Context(), createCircularParams)
+	logger.Info("products", zap.Any("products", createCircularParams.Products))
+
+	// Execute use case
+	circular, err := sh.svc.CreateCircularWithDiscounts(r.Context(), createCircularParams)
 	if err != nil {
 		renderErrorResponse(w, r, "error creating circular", err)
 		return
 	}
 
 	renderResponse(w, r, &UploadCircularResponse{
-		Circular: circular,
+		Circular: &Circular{
+			ID:             circular.ID,
+			StoreID:        circular.StoreID,
+			Name:           circular.Name,
+			ExpirationDate: circular.ExpirationDate.Format("2006-01-02"),
+		},
 	}, http.StatusCreated)
 }
 

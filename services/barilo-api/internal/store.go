@@ -14,12 +14,12 @@ import (
 const gtinRegEx = `^\d{13}$`
 const priceRegEx = `^\d{1,6}(\.\d{2})?$`
 
+// Store
 type Store struct {
 	ID      string
 	Name    string
 	Address string // TODO: turn it into a value object
 	Phone   *string
-	// Brandng // TODO: turn it into a value object
 }
 
 func (t Store) Validate() error {
@@ -33,6 +33,7 @@ func (t Store) Validate() error {
 	return nil
 }
 
+// Category
 type Category struct {
 	ID       string
 	Name     string
@@ -40,6 +41,7 @@ type Category struct {
 	ImageURL *string
 }
 
+// Product
 type Product struct {
 	ID             string
 	StoreID        string
@@ -52,6 +54,7 @@ type Product struct {
 	Brand          *string
 	GTIN           *string
 	Store          *Store
+	Discount       *Discount // In the database, a product has many discounts, but we will only use one discount per product
 }
 
 func (p *Product) Validate() error {
@@ -59,9 +62,64 @@ func (p *Product) Validate() error {
 		validation.Field(&p.Name, validation.Required),
 		validation.Field(&p.Price, validation.Required),
 		validation.Field(&p.Weight, validation.Required),
+		validation.Field(&p.StoreID, validation.Required),
 	); err != nil {
 		return WrapErrorf(err, ErrorCodeInvalidArgument, "invalid values")
 	}
+	return nil
+}
+
+func (c *Product) FromCircularCSV(ctx context.Context, p *Product, csv []string) error {
+	logger := logging.FromContext(ctx)
+
+	if len(csv) != 4 {
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid csv row length: [%d]", len(csv))
+	}
+
+	// Product Name
+	name := csv[0]
+	if name == "" {
+		return NewErrorf(ErrorCodeInvalidArgument, "name field is required")
+	}
+	p.Name = csv[0]
+
+	// Brand
+	brand := csv[1]
+	if brand == "" {
+		p.Brand = nil
+	} else {
+		p.Brand = &brand
+	}
+
+	// Weight
+	weight := csv[2]
+	if weight == "" {
+		return NewErrorf(ErrorCodeInvalidArgument, "weight field is required")
+	}
+	p.Weight = weight
+
+	// Price
+	price := csv[3]
+	if price == "" {
+		return NewErrorf(ErrorCodeInvalidArgument, "price field is required")
+	}
+	match, err := regexp.MatchString(priceRegEx, price)
+	if err != nil {
+		logger.Error("regex.MatchString", zap.Error(err))
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", price)
+	}
+	if !match {
+		logger.Error("error matching price regex", zap.Error(err))
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", price)
+	}
+	floatValue, err := strconv.ParseFloat(price, 64)
+	if err != nil {
+		logger.Error("error parsing string to floatValue", zap.Error(err))
+		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", csv[3])
+	}
+	uintValue := uint64(floatValue * 100)
+	p.Price = uintValue
+
 	return nil
 }
 
@@ -123,6 +181,7 @@ func (p *Product) FromCSV(ctx context.Context, csv []string) error {
 	return nil
 }
 
+// Circular
 type Circular struct {
 	ID             string
 	Name           string
@@ -143,67 +202,13 @@ func (c *Circular) Validate() error {
 	return nil
 }
 
-func (c *Circular) ProductFromCSV(ctx context.Context, p *Product, csv []string) error {
-	logger := logging.FromContext(ctx)
-
-	if len(csv) != 4 {
-		return NewErrorf(ErrorCodeInvalidArgument, "invalid csv row length: [%d]", len(csv))
-	}
-
-	// Product Name
-	name := csv[0]
-	if name == "" {
-		return NewErrorf(ErrorCodeInvalidArgument, "name field is required")
-	}
-	p.Name = csv[0]
-
-	// Brand
-	brand := csv[1]
-	if brand == "" {
-		p.Brand = nil
-	} else {
-		p.Brand = &brand
-	}
-
-	// Weight
-	weight := csv[2]
-	if weight == "" {
-		return NewErrorf(ErrorCodeInvalidArgument, "weight field is required")
-	}
-	p.Weight = weight
-
-	// Price
-	price := csv[3]
-	if price == "" {
-		return NewErrorf(ErrorCodeInvalidArgument, "price field is required")
-	}
-	match, err := regexp.MatchString(priceRegEx, price)
-	if err != nil {
-		logger.Error("regex.MatchString", zap.Error(err))
-		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", price)
-	}
-	if !match {
-		logger.Error("error matching price regex", zap.Error(err))
-		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", price)
-	}
-	floatValue, err := strconv.ParseFloat(price, 64)
-	if err != nil {
-		logger.Error("error parsing string to floatValue", zap.Error(err))
-		return NewErrorf(ErrorCodeInvalidArgument, "invalid price value: %s", csv[3])
-	}
-	uintValue := uint64(floatValue * 100)
-	p.Price = uintValue
-
-	return nil
-}
-
-// -
 type CircularImage struct {
 	ID         string
 	CircularID string
 	URL        string
 }
 
+// Discount
 type Discount struct {
 	ID         string
 	ProductID  string

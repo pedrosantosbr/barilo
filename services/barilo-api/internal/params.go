@@ -113,10 +113,10 @@ type FindProductParams struct {
 // -
 
 type CreateCircularParams struct {
-	StoreID        string    `json:"store_id"`
-	Name           string    `json:"name"`
-	ExpirationDate string    `json:"expiration_date"`
-	Products       []Product `json:"products"`
+	StoreID        string     `json:"store_id"`
+	Name           string     `json:"name"`
+	ExpirationDate string     `json:"expiration_date"`
+	Products       []*Product `json:"products"`
 }
 
 func (c CreateCircularParams) Validate() error {
@@ -146,4 +146,12 @@ func (c CreateCircularParams) Validate() error {
 	}
 
 	return nil
+}
+
+// -
+
+// DiscountSearchParams is only used to search valid discounts for a given product
+type DiscountSearchParams struct {
+	ExpirationDate string // used to get the circulars that are still valid
+	ProductID      string // used to get the discounts of a specific product
 }
