@@ -109,3 +109,49 @@ type FindProductParams struct {
 	Brand    *string
 	Category *string
 }
+
+// -
+
+type CreateCircularParams struct {
+	StoreID        string     `json:"store_id"`
+	Name           string     `json:"name"`
+	ExpirationDate string     `json:"expiration_date"`
+	Products       []*Product `json:"products"`
+}
+
+func (c CreateCircularParams) Validate() error {
+	// validate time.Time date only
+	expirationDate, err := time.Parse("2006-01-02", c.ExpirationDate)
+	if err != nil {
+		return validation.Errors{
+			"expiration_date": NewErrorf(ErrorCodeInvalidArgument, "invalid date"),
+		}
+	}
+
+	circular := Circular{
+		Name:           c.Name,
+		StoreID:        c.StoreID,
+		ExpirationDate: expirationDate,
+	}
+
+	if err := validation.Validate(&circular); err != nil {
+		return WrapErrorf(err, ErrorCodeInvalidArgument, "validation.Validate")
+	}
+
+	// validate products
+	for _, product := range c.Products {
+		if err := product.Validate(); err != nil {
+			return WrapErrorf(err, ErrorCodeInvalidArgument, "product.Validate")
+		}
+	}
+
+	return nil
+}
+
+// -
+
+// DiscountSearchParams is only used to search valid discounts for a given product
+type DiscountSearchParams struct {
+	ExpirationDate string // used to get the circulars that are still valid
+	ProductID      string // used to get the discounts of a specific product
+}

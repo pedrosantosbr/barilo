@@ -26,6 +26,15 @@ type Circulars struct {
 	StoreID        uuid.UUID
 }
 
+type Discounts struct {
+	ID         uuid.UUID
+	Price      int32
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
+	CircularID uuid.UUID
+	ProductID  uuid.UUID
+}
+
 type Products struct {
 	ID             uuid.UUID
 	Name           string

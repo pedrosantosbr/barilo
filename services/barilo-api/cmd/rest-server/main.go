@@ -189,9 +189,11 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 	// - register repositories
 	storeRepo := frameworkpostgresql.NewStore(conf.DB)
 	productRepo := frameworkpostgresql.NewProduct(conf.DB)
+	circularRepo := frameworkpostgresql.NewCircular(conf.DB)
+	discountRepo := frameworkpostgresql.NewDiscount(conf.DB)
 
 	// - register services
-	storeSvc := services.NewStore(storeRepo, productRepo)
+	storeSvc := services.NewStore(storeRepo, productRepo, circularRepo, discountRepo)
 
 	// - register controllers handlers
 	rest.NewStoreHandler(storeSvc).Register(router)

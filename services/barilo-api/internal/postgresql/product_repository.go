@@ -22,75 +22,71 @@ func NewProduct(d db.DBTX) *Product {
 	return &Product{q: db.New(d)}
 }
 
-func (s *Product) Create(ctx context.Context, params internal.CreateProductParams) (internal.Product, error) {
+func (s *Product) Create(ctx context.Context, product *internal.Product) error {
 	var gtin string
-	if params.GTIN != nil {
-		gtin = *params.GTIN
+	if product.GTIN != nil {
+		gtin = *product.GTIN
 	}
 
 	var brand string
-	if params.Brand != nil {
-		brand = *params.Brand
+	if product.Brand != nil {
+		brand = *product.Brand
 	}
 
 	var category string
-	if params.Category != nil {
-		category = *params.Category
+	if product.Category != nil {
+		category = *product.Category
 	}
 
 	var imageUrl string
-	if params.ImageURL != nil {
-		imageUrl = *params.ImageURL
+	if product.ImageURL != nil {
+		imageUrl = *product.ImageURL
 	}
 
 	var expirationDate time.Time
-	if params.ExpirationDate != nil {
-		expirationDate, _ = time.Parse(time.DateOnly, *params.ExpirationDate)
+	if product.ExpirationDate != nil {
+		expirationDate = *product.ExpirationDate
+	}
+
+	storeId, err := uuid.Parse(product.StoreID)
+	if err != nil {
+		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "invalid store id")
 	}
 
 	newID, err := s.q.InsertProduct(ctx, db.InsertProductParams{
-		Name:    params.Name,
-		StoreID: uuid.MustParse(params.StoreID),
-		Price:   int32(params.Price),
-		Weight:  params.Weight,
+		Name:    product.Name,
+		StoreID: storeId,
+		Price:   int32(product.Price),
+		Weight:  product.Weight,
 		Gtin: pgtype.Text{
 			String: gtin,
-			Valid:  params.GTIN != nil,
+			Valid:  product.GTIN != nil,
 		},
 		Brand: pgtype.Text{
 			String: brand,
-			Valid:  params.Brand != nil,
+			Valid:  product.Brand != nil,
 		},
 		Category: pgtype.Text{
 			String: category,
-			Valid:  params.Category != nil,
+			Valid:  product.Category != nil,
 		},
 		ImageUrl: pgtype.Text{
 			String: imageUrl,
-			Valid:  params.ImageURL != nil,
+			Valid:  product.ImageURL != nil,
 		},
 		ExpirationDate: pgtype.Date{
 			Time:  expirationDate,
-			Valid: params.ExpirationDate != nil,
+			Valid: product.ExpirationDate != nil,
 		},
 	})
 
 	if err != nil {
-		return internal.Product{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "q.InsertProduct")
+		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "q.InsertProduct")
 	}
 
-	return internal.Product{
-		ID:             newID.String(),
-		Name:           params.Name,
-		StoreID:        params.StoreID,
-		Price:          params.Price,
-		Weight:         params.Weight,
-		ExpirationDate: &expirationDate,
-		Category:       params.Category,
-		ImageURL:       params.ImageURL,
-		Brand:          params.Brand,
-		GTIN:           params.GTIN,
-	}, nil
+	product.ID = newID.String()
+
+	return nil
 
 }
 
