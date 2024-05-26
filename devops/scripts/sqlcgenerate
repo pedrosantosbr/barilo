@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)"
+source ${REPO_ROOT}/devops/scripts/helpers
+
+BASE_DIR="${REPO_ROOT}/services/barilo-api"
+
+info "Generating sqlc code..."
+
+tree "${BASE_DIR}/db"
+
+cd "${BASE_DIR}/internal/circulars/internal/postgresql"
+
+sqlc generate
+
+cd $REPO_ROOT
+
+info "Done!"

@@ -68,5 +68,21 @@ services:
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
       VAULT_DEV_ROOT_TOKEN_ID: "myroot"
 
+  redis:
+    container_name: barilo-redis
+    image: redis:6.2.5
+    ports:
+      - 6379:6379
+
+  rabbitmq:
+    container_name: barilo-rabbitmq
+    image: rabbitmq:3.9.7-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: barilo
+      RABBITMQ_DEFAULT_PASS: barilo
+
 volumes:
   prom_data:
