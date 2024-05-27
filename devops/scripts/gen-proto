@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)"
+source ${REPO_ROOT}/devops/scripts/helpers
+
+info "Generating python protobufs..."
+
+PYTHONPATH="${REPO_ROOT}/.venv/bin"
+
+# check if PYTHONPATH is defined
+if [[ -z "${PYTHONPATH:-}" ]]; then
+  error "PYTHONPATH is not defined. Please set it to the virtualenv path."
+fi
+
+PROTO_FILES=$(find ${REPO_ROOT}/lib/protos -name '*.proto')
+
+python -m grpc_tools.protoc -I "${REPO_ROOT}/lib/protos" --python_out="${REPO_ROOT}/lib/python" --pyi_out="${REPO_ROOT}/lib/python" --grpc_python_out="${REPO_ROOT}/lib/python" ${PROTO_FILES}

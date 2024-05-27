@@ -1,0 +1,8 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "python.analysis.extraPaths": [
+        "../../lib/python"
+    ]
+}

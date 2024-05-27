@@ -40,8 +40,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "stores",
+    "markets",
     "accounts",
+    "ranks",
     # dev
     "corsheaders",
 ]

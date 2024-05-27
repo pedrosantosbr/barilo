@@ -5,3 +5,7 @@ dist/
 services/.DS_Store
 services/*/node_modules/
 .pgdata/
+
+__pycache__/
+*.py[cod]
+*$py.class
