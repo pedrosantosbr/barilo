@@ -103,15 +103,15 @@ export const OffersTemplate: FC<{ circulars: CircularListResponse }> = ({
 
 const CircularCard: FC<{ circular: Circular }> = ({ circular }) => {
   return (
-    <div className="bg-background rounded-lg p-4 border">
+    <div className="bg-background rounded-lg p-4 border shadow-sm">
       <div className="font-bold">{circular.title}</div>
       <div className="flex space-x-2 text-sm text-muted-foreground">
         <div className="">{circular.store.name}</div>
         <div className="">{circular.store.address}</div>
       </div>
-      <ul className="text-sm mt-4 font-medium">
+      <ul className="text-sm mt-4">
         {circular.items.map((item, idx) => (
-          <li key={idx} className="flex space-x-2 justify-between">
+          <li key={idx} className="flex space-x-2">
             <div>{item.product.name}</div>
             <div className="font-bold text-foreground">
               ${item.discount_price}

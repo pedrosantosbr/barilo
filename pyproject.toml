@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "barilo"
+version = "0.1.0"
+description = ""
+authors = ["Pedro Santos <pedro357bm@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+grpcio-tools = "^1.64.0"
+grpcio = "^1.64.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
