@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 
 import Cooker3D from "@/assets/img/cooker-3d.png";

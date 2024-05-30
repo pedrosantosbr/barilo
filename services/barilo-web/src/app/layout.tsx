@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import cn from "classnames";
-import { CookieIcon, HomeIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
-import { Megaphone } from "lucide-react";
+
 import { ThemeProvider } from "@/layouts/theme-provider";
-import { ModeToggle } from "@/components/ui/mode-toggle";
 
 const dm = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -21,10 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt">
       <body
         className={cn(
-          "min-h-screen bg-background text-foreground font-sans antialiased",
+          "min-h-screen bg-muted text-foreground font-sans antialiased",
           dm.variable
         )}
       >
@@ -34,31 +31,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <header className="px-10 h-14 border-b flex items-center">
-            <div className="font-extrabold flex items-center text-2xl text-foreground">
-              <CookieIcon className="w-8 h-8 mr-2" />
-              Barilo
-            </div>
-            <div className="ml-auto">
-              <nav>
-                <ul className="flex space-x-4 items-center">
-                  <li>
-                    <Link href="/" className="flex items-center">
-                      <HomeIcon className="mr-2 w-4" /> Menu inicial
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/offers" className="flex items-center">
-                      <Megaphone className="mr-2 w-4" /> Ofertas
-                    </Link>
-                  </li>
-                  <li>
-                    <ModeToggle />
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          </header>
           {children}
         </ThemeProvider>
       </body>
