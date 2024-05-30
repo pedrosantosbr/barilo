@@ -55,3 +55,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_absolute_url(self):
         return "/users/%i/" % (self.pk)
+
+
+class WhatsAppNumber(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=11)
