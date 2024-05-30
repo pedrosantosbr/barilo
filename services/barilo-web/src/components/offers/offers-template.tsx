@@ -86,10 +86,6 @@ const data: StoreWithOffers[] = [
 export const OffersTemplate: FC<{ circulars: CircularListResponse }> = ({
   circulars,
 }) => {
-  const [filters, setFilters] = useState<Filters>({
-    lowerPrice: false,
-  });
-
   return (
     <div className="space-y-12">
       <div className="flex flex-col space-y-4">
@@ -108,7 +104,7 @@ const CircularCard: FC<{ circular: Circular }> = ({ circular }) => {
         <div className="w-10 h-10 border rounded-lg bg-slate-200"></div>
         <div className="flex flex-col flex-1">
           <div className="flex justify-between items-center">
-            <h4 className="font-bold">Nome do Encarte</h4>
+            <h4 className="font-bold">Saldão de ofertas</h4>
             <div className="text-xs italic text-muted-foreground font-medium">
               Válido até 4 de Jul, 2024
             </div>
@@ -118,10 +114,13 @@ const CircularCard: FC<{ circular: Circular }> = ({ circular }) => {
           </div>
         </div>
       </div>
-      <ul className="text-sm mt-4 flex flex-wrap">
+      <ul className="text-sm mt-4">
         {circular.items.map((item, idx) => (
-          <li key={idx} className="flex space-x-2 items-center p-2">
-            <div className="w-5 h-5 flex items-center">🛒</div>
+          <li
+            key={idx}
+            className="flex space-x-2 items-center border-b border-dashed p-1"
+          >
+            {/* <div className="w-5 h-5 flex items-center">🛒</div> */}
             <div className="font-medium tracking-wide capitalize">
               {item.product.name}
             </div>

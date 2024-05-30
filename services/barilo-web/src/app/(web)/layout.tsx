@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/header";
 import { AddressContextProvider } from "@/contexts/address-context";
+import { SessionProvider } from "next-auth/react";
 
 export default function WebLayout({
   children,
@@ -10,10 +11,12 @@ export default function WebLayout({
 }>) {
   return (
     <div>
-      <AddressContextProvider>
-        <Header />
-        {children}
-      </AddressContextProvider>
+      <SessionProvider>
+        <AddressContextProvider>
+          <Header />
+          {children}
+        </AddressContextProvider>
+      </SessionProvider>
     </div>
   );
 }

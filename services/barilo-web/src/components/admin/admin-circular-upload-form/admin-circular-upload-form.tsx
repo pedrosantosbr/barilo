@@ -35,6 +35,9 @@ const formSchema = z.object({
   title: z.string().min(2, {
     message: "Título deve ter ao menos 2 caracteres.",
   }),
+  description: z.string().min(2, {
+    message: "Descrição deve ter ao menos 2 caracteres.",
+  }),
   expirationDate: z.date(),
 });
 
@@ -46,11 +49,12 @@ export function UploadCircularForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
+      description: "",
     },
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
@@ -60,10 +64,29 @@ export function UploadCircularForm() {
 
     const formData = new FormData();
     formData.append("title", values.title);
+    formData.append("description", values.description);
     formData.append("expiration_date", values.expirationDate.toISOString());
     formData.append("csv", file as Blob);
 
     console.log(formData);
+
+    // Send the form data to your API.
+    try {
+      const resp = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/markets/1/circulars/upload`,
+        {
+          mode: "cors",
+          method: "POST",
+          body: formData,
+        }
+      );
+      if (!resp.ok) {
+        console.log("Error uploading circular.", resp);
+      }
+      console.log("Circular uploaded.", resp);
+    } catch (error) {
+      console.error("Error uploading circular.", error);
+    }
   }
 
   return (
@@ -76,7 +99,23 @@ export function UploadCircularForm() {
             <FormItem>
               <FormLabel>Título</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="Título" {...field} />
+              </FormControl>
+              <FormDescription>
+                Nome do encarte que será exibido no site.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Input placeholder="Descrição" {...field} />
               </FormControl>
               <FormDescription>
                 Nome do encarte que será exibido no site.
@@ -154,10 +193,9 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
 }
 
 const Uploader: React.FC<{
-  file?: File;
   setFile: React.Dispatch<React.SetStateAction<File | undefined>>;
   className?: string;
-}> = ({ file, setFile, className }) => {
+}> = ({ setFile, className }) => {
   const [onDragEnterClass, setOnDragEnterClass] = React.useState("");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

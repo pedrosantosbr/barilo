@@ -4,7 +4,7 @@ import z from "zod";
 // import cookies
 import { parseCookies } from "nookies";
 
-const preferenceCookieSchema = z.object({
+export const preferenceCookieSchema = z.object({
   cep: z.string().optional(),
   address: z.string().optional(),
   distance: z.number().optional(),

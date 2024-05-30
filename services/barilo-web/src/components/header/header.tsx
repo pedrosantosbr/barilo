@@ -1,8 +1,7 @@
 "use client";
 
-import { HomeIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
-import { Megaphone } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,10 +14,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useAddress } from "@/contexts/address-context";
+import { preferenceCookieSchema, useAddress } from "@/contexts/address-context";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { Avatar } from "../ui/avatar";
+import { setCookie } from "nookies";
 
 export const Header = () => {
-  const { address } = useAddress();
+  const { status } = useSession();
+
+  const isAuthenticated = status === "authenticated";
+
   return (
     <header className="bg-amber-400 dark:bg-black">
       <div className="h-14 flex items-center container">
@@ -29,7 +35,7 @@ export const Header = () => {
         <div className="ml-auto">
           <nav>
             <ul className="flex space-x-4 items-center font-medium">
-              <li>
+              {/* <li>
                 <Link href="/" className="flex items-center">
                   <HomeIcon className="mr-2 w-4" /> Menu inicial
                 </Link>
@@ -38,6 +44,17 @@ export const Header = () => {
                 <Link href="/ofertas" className="flex items-center">
                   <Megaphone className="mr-2 w-4" /> Encartes
                 </Link>
+              </li> */}
+              <li>
+                <Button
+                  className="hover:bg-amber-300 bg-gradient-to-r from-amber-200/50 to-amber-200/20 rounded-full"
+                  variant={"ghost"}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="font-medium">Pedro Santos</div>
+                    <Avatar className="bg-gray-100 h-6 w-6" />
+                  </div>
+                </Button>
               </li>
             </ul>
           </nav>
@@ -50,6 +67,16 @@ export const Header = () => {
         <div className="ml-auto h-10 flex items-center">
           <nav>
             <ul className="flex space-x-4 items-center text-sm font-medium">
+              <li className={cn(isAuthenticated && "hidden")}>
+                <Link href="/" className="">
+                  Crie sua conta
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="">
+                  Login
+                </Link>
+              </li>
               <li>
                 <Link href="/" className="">
                   Contato
@@ -71,6 +98,8 @@ export const Header = () => {
 export function AddressModal() {
   const { address } = useAddress();
   const [cep, setCep] = useState<string>("");
+  const [error, setError] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
 
   function onCepChange(e: React.ChangeEvent<HTMLInputElement>) {
     // if value is not a number, return
@@ -79,24 +108,41 @@ export function AddressModal() {
 
   async function submitHandler(e: React.FormEvent<HTMLFormElement>) {
     // if cep is not a valid cep, return
+
     e.preventDefault();
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/lo/preferences/`, {
-        mode: "cors",
-        method: "POST",
-        credentials: "include",
-        body: JSON.stringify({
-          cep: cep.replace(/[^0-9]/g, ""),
-          distance: 1,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const resp = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/lo/preferences/`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            cep: cep.replace(/[^0-9]/g, ""),
+            distance: 1,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setIsLoading(true);
+      if (!resp.ok) {
+        console.log("Error setting address.", resp);
+        setError("Endereço não encontrado.");
+        return;
+      }
+      try {
+        const payload = preferenceCookieSchema.parse(await resp.json());
+        setCookie(null, "barilo.preferences", JSON.stringify(payload));
+      } catch (e) {
+        console.error("Error parsing preferences response", e);
+      }
       window.location.reload();
     } catch (error) {
       console.log("error", error);
+      setError("Erro nos servidor, tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -129,10 +175,13 @@ export function AddressModal() {
                 placeholder="00000-000"
                 className="col-span-3 tracking-widest"
               />
-              <Button type="submit">Usar</Button>
+              <Button disabled={isLoading} type="submit">
+                {isLoading ? <Loader2Icon className="animate-spin" /> : "Usar"}
+              </Button>
             </div>
-            <Button variant={"link"}>Não sei meu CEP</Button>
+            {error && <small className="text-red-500">{error}</small>}
           </form>
+          <Button variant={"link"}>Não sei meu CEP</Button>
         </div>
         {/* <DialogFooter>
           <Button type="submit">Save changes</Button>

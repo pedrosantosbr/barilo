@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { WhatsappNumber } from "@/components/whatsapp-number";
 
 async function fetchCirculars() {
   try {
@@ -18,6 +19,7 @@ async function fetchCirculars() {
       `${process.env.API_URL}/api/v1/circulars/search/`
     );
     const parsedData = CircularListResponseSchema.parse(await response.json());
+
     return parsedData;
   } catch (error) {
     console.error("Failed to fetch data", error);
@@ -25,8 +27,10 @@ async function fetchCirculars() {
   }
 }
 
-export default async function Offers() {
+export default async function Circulars() {
   const circulars = await fetchCirculars();
+  console.log(circulars);
+  console.log("x");
 
   return (
     <main className="flex min-h-screen overflow-y-auto flex-col items-center pb-40">
@@ -81,15 +85,7 @@ export default async function Offers() {
             </ul>
 
             {/*  */}
-            <div className="border bg-white shadow-lg space-y-4  p-5 rounded-lg mt-10">
-              <h1 className="text-xl font-bold">
-                Receber Ofertas pelo Whatsapp
-              </h1>
-              <div>
-                <Input placeholder="Seu número de telefone" />
-              </div>
-              <Button className="font-bold">Quero Receber</Button>
-            </div>
+            <WhatsappNumber />
           </div>
         </div>
       </div>
