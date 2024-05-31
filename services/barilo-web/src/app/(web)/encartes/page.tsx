@@ -111,7 +111,7 @@ export default async function Circulars() {
             </ul>
 
             {/*  */}
-            {phoneNumbers.length > 0 && <ConnectWhatsAppNumber />}
+            {phoneNumbers.length === 0 && <ConnectWhatsAppNumber />}
           </div>
         </div>
       </div>

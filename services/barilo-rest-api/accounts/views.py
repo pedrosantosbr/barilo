@@ -2,7 +2,7 @@ import googlemaps
 
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from core.authentication import JWTAuthentication
 from rest_framework.decorators import (
     api_view,
     permission_classes,
@@ -16,8 +16,11 @@ from typing import Optional
 
 from accounts.serializers import PreferencesSerializer
 
-from accounts.models import User
-from accounts.serializers import LoggedInUserSerializerReadOnly
+from accounts.models import User, WhatsAppNumber
+from accounts.serializers import (
+    LoggedInUserSerializerReadOnly,
+    WhatsAppNumberSerializer,
+)
 
 import structlog
 
@@ -118,4 +121,37 @@ def user_preferences(request):
 
 
 @api_view(["GET", "POST"])
-def whatsapp_numbers(request): ...
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def whatsapp_numbers(request):
+    if request.method == "GET":
+        numbers = WhatsAppNumber.objects.filter(user=request.user)
+        serializer = WhatsAppNumberSerializer(numbers, many=True)
+        results = [number["phone_number"] for number in serializer.data]
+        return Response(results)
+
+    serializer = WhatsAppNumberSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    sanitized_number = (
+        serializer.validated_data["phone_number"]
+        .replace(" ", "")
+        .replace("-", "")
+        .replace("(", "")
+        .replace(")", "")
+    )
+
+    exists = WhatsAppNumber.objects.filter(phone_number=sanitized_number).exists()
+    if exists:
+        return Response(
+            {"error": "Phone number already exists"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    new_number = WhatsAppNumber.objects.create(
+        user=request.user, phone_number=sanitized_number
+    )
+    new_number.save()
+
+    return Response(
+        {"phone_number": new_number.phone_number}, status=status.HTTP_201_CREATED
+    )

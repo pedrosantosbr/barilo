@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +27,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { PhoneNumberInput } from "./ui/phone-number-input";
-import { set } from "date-fns";
 
 const formSchema = z.object({
   phone_number: z.string().min(11, {
@@ -41,6 +39,19 @@ export const ConnectWhatsAppNumber = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    async function init() {
+      const res = await fetch(`/api/v1/whatsapp/phone-numbers`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log(await res.json());
+    }
+    init();
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,7 +63,6 @@ export const ConnectWhatsAppNumber = () => {
     setError("");
     try {
       setIsLoading(true);
-
       const resp = await fetch(
         `${process.env.API_URL}/api/v1/whatsapp/phone-numbers/`,
         {

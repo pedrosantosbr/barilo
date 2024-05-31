@@ -14,3 +14,7 @@ class LoggedInUserSerializerReadOnly(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
     name = serializers.CharField(read_only=True)
+
+
+class WhatsAppNumberSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=11)

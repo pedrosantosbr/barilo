@@ -207,7 +207,7 @@ export function ProfileDropdownMenu() {
         >
           <div className="flex items-center space-x-2">
             <div className="font-medium">Pedro Santos</div>
-            <Avatar className="bg-black/10 h-6 w-6" />
+            <Avatar className="bg-amber-600/20 h-6 w-6" />
           </div>
         </Button>
       </DropdownMenuTrigger>
