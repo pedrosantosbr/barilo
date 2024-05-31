@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, LogOut } from "lucide-react";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,9 +16,19 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { preferenceCookieSchema, useAddress } from "@/contexts/address-context";
 import { cn } from "@/lib/utils";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Avatar } from "../ui/avatar";
 import { setCookie } from "nookies";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
   const { status } = useSession();
@@ -45,17 +55,11 @@ export const Header = () => {
                   <Megaphone className="mr-2 w-4" /> Encartes
                 </Link>
               </li> */}
-              <li>
-                <Button
-                  className="hover:bg-amber-300 bg-gradient-to-r from-amber-200/50 to-amber-200/20 rounded-full"
-                  variant={"ghost"}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="font-medium">Pedro Santos</div>
-                    <Avatar className="bg-gray-100 h-6 w-6" />
-                  </div>
-                </Button>
-              </li>
+              {isAuthenticated && (
+                <li>
+                  <ProfileDropdownMenu />
+                </li>
+              )}
             </ul>
           </nav>
         </div>
@@ -72,11 +76,13 @@ export const Header = () => {
                   Crie sua conta
                 </Link>
               </li>
-              <li>
-                <Link href="/login" className="">
-                  Login
-                </Link>
-              </li>
+              {!isAuthenticated && (
+                <li>
+                  <Link href="/login" className="">
+                    Login
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/" className="">
                   Contato
@@ -188,5 +194,34 @@ export function AddressModal() {
         </DialogFooter> */}
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function ProfileDropdownMenu() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          className="hover:bg-amber-300 bg-gradient-to-r from-amber-200/50 to-amber-200/20 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0"
+          variant={"ghost"}
+        >
+          <div className="flex items-center space-x-2">
+            <div className="font-medium">Pedro Santos</div>
+            <Avatar className="bg-black/10 h-6 w-6" />
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut}>
+          Sair
+          <DropdownMenuShortcut>
+            <LogOut className="w-4 text-black" />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

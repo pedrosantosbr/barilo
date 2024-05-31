@@ -2,6 +2,7 @@ import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const handler = NextAuth({
+  secret: process.env.JWT_SECRET,
   providers: [
     CredentialsProvider({
       credentials: {
