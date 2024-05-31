@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { AuthOptions, DefaultUser } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { setCookie } from "nookies";
 import jwt from "jsonwebtoken";
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
@@ -96,11 +95,11 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 
               // Calculate maxAge in seconds from the token's expiration time
               const maxAge = decodedToken.exp - Math.floor(Date.now() / 1000);
-              setCookie({ res }, "barilo.accessToken", accessToken, {
-                maxAge: maxAge,
-                path: "/",
-                httpOnly: true,
-              });
+
+              res.setHeader(
+                "Set-Cookie",
+                `barilo.access-token=${accessToken}; Max-Age=${maxAge}; Path=/; HttpOnly; sameSite=strict;`
+              );
 
               return user;
             } catch (e) {

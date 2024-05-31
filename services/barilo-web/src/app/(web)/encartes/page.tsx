@@ -1,7 +1,9 @@
+"use server";
+
 import { MapPinnedIcon, ShoppingCart } from "lucide-react";
 import { CircularListResponseSchema } from "@/entities/store";
 import { OffersTemplate } from "@/components/offers/offers-template";
-import { parseCookies } from "nookies";
+
 import {
   Select,
   SelectContent,
@@ -10,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
+import { getNextCookie } from "@/app/_utils";
 
 async function fetchCirculars() {
   try {
@@ -33,20 +36,21 @@ async function fetchWhatsAppPhoneNumbers() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${getNextCookie("barilo.access-token")}`,
         },
       }
     );
     if (!resp.ok) {
-      console.error("Failed to fetch phone numbers", resp);
+      console.error("Failed to fetch phone numbers", resp.status);
       return [];
     }
 
     const parsedData = (await resp.json()) as string[];
-
+    console.log(`🎃 parsedData:`, parsedData);
     return parsedData;
   } catch (error) {
     // console.error("Failed to fetch data", error);
-    return null;
+    return [];
   }
 }
 
@@ -107,7 +111,7 @@ export default async function Circulars() {
             </ul>
 
             {/*  */}
-            <ConnectWhatsAppNumber />
+            {phoneNumbers.length > 0 && <ConnectWhatsAppNumber />}
           </div>
         </div>
       </div>
