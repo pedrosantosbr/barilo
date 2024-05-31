@@ -119,7 +119,7 @@ export function AddressModal() {
 
     try {
       const resp = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/lo/preferences/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/preferences/`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -215,7 +215,7 @@ export function ProfileDropdownMenu() {
         <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut}>
+        <DropdownMenuItem onClick={() => signOut()}>
           Sair
           <DropdownMenuShortcut>
             <LogOut className="w-4 text-black" />

@@ -1,9 +1,7 @@
 import { MapPinnedIcon, ShoppingCart } from "lucide-react";
-import { OffersTemplate } from "@/components/offers/offers-template";
-import { Button } from "@/components/ui/button";
 import { CircularListResponseSchema } from "@/entities/store";
-import { Input } from "@/components/ui/input";
-
+import { OffersTemplate } from "@/components/offers/offers-template";
+import { parseCookies } from "nookies";
 import {
   Select,
   SelectContent,
@@ -11,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WhatsappNumber } from "@/components/whatsapp-number";
+import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
 
 async function fetchCirculars() {
   try {
@@ -27,10 +25,34 @@ async function fetchCirculars() {
   }
 }
 
+async function fetchWhatsAppPhoneNumbers() {
+  try {
+    const resp = await fetch(
+      `${process.env.API_URL}/api/v1/whatsapp/phone-numbers/`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!resp.ok) {
+      console.error("Failed to fetch phone numbers", resp);
+      return [];
+    }
+
+    const parsedData = (await resp.json()) as string[];
+
+    return parsedData;
+  } catch (error) {
+    // console.error("Failed to fetch data", error);
+    return null;
+  }
+}
+
 export default async function Circulars() {
   const circulars = await fetchCirculars();
-  console.log(circulars);
-  console.log("x");
+  const phoneNumbers = await fetchWhatsAppPhoneNumbers();
 
   return (
     <main className="flex min-h-screen overflow-y-auto flex-col items-center pb-40">
@@ -85,7 +107,7 @@ export default async function Circulars() {
             </ul>
 
             {/*  */}
-            <WhatsappNumber />
+            <ConnectWhatsAppNumber />
           </div>
         </div>
       </div>
