@@ -31,6 +31,26 @@ export const LoginForm = () => {
     setError("");
     setIsLoading(true);
     try {
+      const rest = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/token/`,
+        {
+          mode: "cors",
+          credentials: "include",
+          body: JSON.stringify(data),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!rest.ok) {
+        const err = await rest.json();
+        console.log(err, rest.status);
+        setError("Usuário ou senha inválidos");
+        return;
+      }
+
       const res = await signIn("credentials", {
         email: data.email,
         password: data.password,

@@ -3,6 +3,8 @@ import { AuthOptions, DefaultUser } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
+import { parseCookies } from "nookies";
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   return await NextAuth(req, res, {
@@ -18,48 +20,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
             id: "",
           };
 
-          let accessToken = "";
-
-          try {
-            const resp = await fetch(`${process.env.API_URL}/api/v1/token/`, {
-              credentials: "include",
-              mode: "cors",
-              body: JSON.stringify(credentials),
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-
-            if (!resp.ok) {
-              try {
-                const err = await resp.json();
-                console.log(err, resp.status);
-                // todo: handle error
-                return null;
-              } catch (e) {
-                console.log(e);
-                // todo: handle error
-                return null;
-              }
-            }
-
-            try {
-              const data = (await resp.json()) as {
-                access: string;
-                refresh: string;
-              };
-              accessToken = data.access;
-            } catch (e) {
-              console.log(e);
-              // todo: handle error
-              return null;
-            }
-          } catch (e) {
-            console.log(e);
-            // todo: handle error
-            return null;
-          }
+          const accessToken = parseCookies({ req })["barilo.access-token"];
 
           try {
             const resp = await fetch(
@@ -98,7 +59,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 
               res.setHeader(
                 "Set-Cookie",
-                `barilo.access-token=${accessToken}; Max-Age=${maxAge}; Path=/; HttpOnly; sameSite=strict;`
+                `barilo.access-token=${accessToken}; Max-Age=${maxAge}; Path=/; HttpOnly; sameSite=Lax;`
               );
 
               return user;

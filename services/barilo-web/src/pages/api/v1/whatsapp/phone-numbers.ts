@@ -10,8 +10,10 @@ export default async function handler(
   if (req.method === "GET") {
     console.log("GET request received", parseCookies({ req }));
     res.status(200).json({ message: "Hello from API route" });
-  } else {
-    res.setHeader("Allow", ["GET"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
+
+  if (req.method === "POST") {
+    console.log("POST request received", req.body, parseCookies({ req }));
+    res.status(201).json({ message: "created" });
   }
 }

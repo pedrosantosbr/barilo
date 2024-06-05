@@ -41,7 +41,7 @@ class CircularProductCreatedProducer:
         try:
             self.connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
-                    "localhost",
+                    "rabbitmq",
                     heartbeat=600,
                     blocked_connection_timeout=300,
                     credentials=pika.PlainCredentials("barilo", "barilo"),

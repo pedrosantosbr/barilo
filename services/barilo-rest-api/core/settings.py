@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-65$lk2597jt!c&rt2%vj3-7y=tw8182$&^67)o((gsv03j4t_o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "barilo-rest-api"]
 
 
 AUTH_USER_MODEL = "accounts.User"
@@ -120,10 +120,16 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 # Cors
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS_ORIGIN_ALLOW_ALL = True
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://127.0.0.1:8000",
+# ]
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

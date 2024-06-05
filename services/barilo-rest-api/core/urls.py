@@ -46,14 +46,13 @@ class TokenObtainPairView(TokenViewBase):
 
         resp = Response(serializer.validated_data, status=status.HTTP_200_OK)
         resp.set_cookie(
-            "bo.jwt",
+            "barilo.access-token",
             serializer.validated_data["access"],
             httponly=True,
-            samesite="Lax",
+            samesite="None",
             secure=True,
             domain="localhost",
         )
-        print("cookie set")
         return resp
 
 

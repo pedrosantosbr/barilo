@@ -47,8 +47,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         """
         If token not found in the cookie, then it will be extracted from the headers.
         """
-        print(request.COOKIES, "oeter here")
-
+        print("cookies", request.COOKIES)
         cookie_jwt = request.COOKIES.get(AUTH_COOKIE_NAME)
         if cookie_jwt is not None:
             validated_token = self.get_validated_token(cookie_jwt)

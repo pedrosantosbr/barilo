@@ -64,9 +64,11 @@ export const ConnectWhatsAppNumber = () => {
     try {
       setIsLoading(true);
       const resp = await fetch(
-        `${process.env.API_URL}/api/v1/whatsapp/phone-numbers/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/whatsapp/phone-numbers/`,
         {
           method: "POST",
+          credentials: "include",
+          mode: "cors",
           headers: {
             "Content-Type": "application/json",
           },
@@ -105,7 +107,7 @@ export const ConnectWhatsAppNumber = () => {
     <div className="border bg-white shadow-lg space-y-4  p-5 rounded-lg mt-10">
       <h1 className="text-xl font-bold">Receber Ofertas pelo Whatsapp</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <FormField
             control={form.control}
             name="phone_number"
@@ -122,15 +124,15 @@ export const ConnectWhatsAppNumber = () => {
               </FormItem>
             )}
           />
+          {status === "authenticated" ? (
+            <Button className="font-bold" type="submit">
+              {isLoading ? "Enviando..." : "Receber Ofertas"}
+            </Button>
+          ) : (
+            <CreateAccountModal />
+          )}
         </form>
       </Form>
-      {status === "authenticated" ? (
-        <Button className="font-bold">
-          {isLoading ? "Enviando..." : "Receber Ofertas"}
-        </Button>
-      ) : (
-        <CreateAccountModal />
-      )}
     </div>
   );
 };

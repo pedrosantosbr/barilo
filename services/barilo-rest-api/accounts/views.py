@@ -99,7 +99,7 @@ def user_preferences(request):
     address = get_address_by_cep(serializer.validated_data["cep"])
     if not address:
         return Response(
-            {"error": f"Address not found for cep {serializer.validated_data["cep"]}"},
+            {"error": f"Address not found for cep {serializer.validated_data['cep']}"},
             status=status.HTTP_404_NOT_FOUND,
         )
 
