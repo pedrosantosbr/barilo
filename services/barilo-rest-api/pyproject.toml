@@ -21,6 +21,7 @@ grpcio = "^1.64.0"
 grpcio-tools = "^1.64.0"
 googlemaps = "^4.10.0"
 djangorestframework-simplejwt = "^5.3.1"
+psycopg = "^3.1.19"
 
 
 [build-system]
