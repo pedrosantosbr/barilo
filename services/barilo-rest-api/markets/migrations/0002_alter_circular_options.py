@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('markets', '0001_initial'),
+        ("markets", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='circular',
-            options={'ordering': ['-created_at']},
+            name="circular",
+            options={"ordering": ["-created_at"]},
         ),
     ]

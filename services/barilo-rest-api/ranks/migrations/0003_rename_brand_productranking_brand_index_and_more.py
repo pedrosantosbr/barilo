@@ -4,25 +4,24 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('ranks', '0002_remove_productranking_description_and_more'),
+        ("ranks", "0002_remove_productranking_description_and_more"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='productranking',
-            old_name='brand',
-            new_name='brand_index',
+            model_name="productranking",
+            old_name="brand",
+            new_name="brand_index",
         ),
         migrations.RenameField(
-            model_name='productranking',
-            old_name='title',
-            new_name='title_index',
+            model_name="productranking",
+            old_name="title",
+            new_name="title_index",
         ),
         migrations.RenameField(
-            model_name='productranking',
-            old_name='weight',
-            new_name='weight_index',
+            model_name="productranking",
+            old_name="weight",
+            new_name="weight_index",
         ),
     ]

@@ -4,21 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('markets', '0002_alter_circular_options'),
+        ("markets", "0002_alter_circular_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='market',
-            name='cep',
+            model_name="market",
+            name="cep",
             field=models.CharField(default=1, max_length=8),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='market',
-            name='address',
+            model_name="market",
+            name="address",
             field=models.CharField(max_length=500),
         ),
     ]

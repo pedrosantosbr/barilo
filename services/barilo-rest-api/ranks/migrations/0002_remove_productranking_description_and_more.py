@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('ranks', '0001_initial'),
+        ("ranks", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='productranking',
-            name='description',
+            model_name="productranking",
+            name="description",
         ),
         migrations.AddField(
-            model_name='productranking',
-            name='title',
-            field=models.CharField(default='default', max_length=500),
+            model_name="productranking",
+            name="title",
+            field=models.CharField(default="default", max_length=500),
             preserve_default=False,
         ),
     ]
