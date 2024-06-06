@@ -80,9 +80,9 @@ export default async function Circulars() {
               <SelectValue placeholder="0km" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Entre 0 e 10km</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="0-10">Entre 0 e 10km</SelectItem>
+              <SelectItem value="20-30">Entre 20km e 30km</SelectItem>
+              <SelectItem value="40-50">Entre 40km e 50km</SelectItem>
             </SelectContent>
           </Select>
         </div>

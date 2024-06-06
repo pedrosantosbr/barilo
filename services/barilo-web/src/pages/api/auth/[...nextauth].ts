@@ -3,7 +3,6 @@ import { AuthOptions, DefaultUser } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
 import { parseCookies } from "nookies";
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
@@ -77,5 +76,11 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
         },
       }),
     ],
+    jwt: {
+      maxAge: 60 * 5,
+    },
+    session: {
+      maxAge: 60 * 5,
+    },
   } as AuthOptions);
 }

@@ -34,23 +34,18 @@ const formSchema = z.object({
   }),
 });
 
+// const fetcher = (url: string) =>
+//   fetch(url, { credentials: "include" }).then((res) => res.json());
+
 export const ConnectWhatsAppNumber = () => {
   const { status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function init() {
-      const res = await fetch(`/api/v1/whatsapp/phone-numbers`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      console.log(await res.json());
-    }
-    init();
-  }, []);
+  // const { data } = useSWR(
+  //   `${process.env.NEXT_PUBLIC_API_URL}/api/v1/whatsapp/phone-numbers`,
+  //   fetcher
+  // );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,6 +55,8 @@ export const ConnectWhatsAppNumber = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    // remove mask from phone number
+    const phoneNumber = data.phone_number.replace(/\D/g, "");
     setError("");
     try {
       setIsLoading(true);
@@ -72,11 +69,17 @@ export const ConnectWhatsAppNumber = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify({ phone_number: phoneNumber }),
         }
       );
 
       if (!resp.ok) {
+        // Unauthorized
+        if (resp.status === 401) {
+          window.location.reload();
+          return;
+        }
+
         try {
           const err = (await resp.json()) as { detail: string };
           setError(err.detail); // Show error message

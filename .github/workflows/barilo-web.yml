@@ -1,0 +1,37 @@
+name: barilo-web
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: services/barilo-web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: npm install --global bun
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: bun
+          cache-dependency-path: |
+            bun.lockb
+            services/barilo-web/bun.lockb
+
+      - run: bun install
+        working-directory: ${{ github.workspace }}
+
+      # - run: yarn install
+
+      # - run: yarn test
+
+      - run: yarn lint
+        working-directory: ${{ github.workspace }}
