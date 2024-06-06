@@ -21,17 +21,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: bun
-          cache-dependency-path: |
-            bun.lockb
-            services/barilo-web/bun.lockb
+          # cache: yarn
+          # cache-dependency-path: |
+          #   yarn.lockb
+          #   services/barilo-web/yarn.lockb
 
-      - run: bun install
-        working-directory: ${{ github.workspace }}
+      # - run: bun install
+      #   working-directory: ${{ github.workspace }}
 
-      # - run: yarn install
+      - run: yarn install
 
-      # - run: yarn test
+      # - run: bun test
 
-      - run: yarn lint
-        working-directory: ${{ github.workspace }}
+      - run: bun lint
