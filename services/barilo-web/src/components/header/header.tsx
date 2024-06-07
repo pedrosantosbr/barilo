@@ -29,9 +29,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DefaultUser, Session } from "next-auth";
 
 export const Header = () => {
-  const { status } = useSession();
+  const { status, data } = useSession();
+  const user: Session["user"] = { address: "", ...data?.user };
 
   const isAuthenticated = status === "authenticated";
 
@@ -55,9 +57,9 @@ export const Header = () => {
                   <Megaphone className="mr-2 w-4" /> Encartes
                 </Link>
               </li> */}
-              {isAuthenticated && (
+              {isAuthenticated && user && (
                 <li>
-                  <ProfileDropdownMenu />
+                  <ProfileDropdownMenu user={user} />
                 </li>
               )}
             </ul>
@@ -197,7 +199,7 @@ export function AddressModal() {
   );
 }
 
-export function ProfileDropdownMenu() {
+export function ProfileDropdownMenu({ user }: { user: Session["user"] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -206,7 +208,7 @@ export function ProfileDropdownMenu() {
           variant={"ghost"}
         >
           <div className="flex items-center space-x-2">
-            <div className="font-medium">Pedro Santos</div>
+            <div className="font-medium">{user.name}</div>
             <Avatar className="bg-amber-600/20 h-6 w-6" />
           </div>
         </Button>

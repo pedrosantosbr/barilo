@@ -7,7 +7,7 @@ function main() (
 
   echo "Waiting for postgres..."
 
-  # ./wait_for_postgres.py
+  ./wait_for_postgres.py
 
   command="${1:-}"
 
@@ -29,10 +29,15 @@ function main() (
 
 function dev_poetry_install() (
   set -x
-  poetry install --sync
+  poetry install --sync --no-root
 )
 
 function run_setup() (
+  printf "\n\n"
+  echo "Creating migrations..."
+  echo "====================="
+  python3 manage.py makemigrations
+
   printf "\n\n"
   echo "Running migrations..."
   echo "====================="

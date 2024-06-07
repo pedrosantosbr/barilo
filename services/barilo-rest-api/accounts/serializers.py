@@ -1,4 +1,24 @@
 from rest_framework import serializers
+from accounts.models import User
+
+
+class UserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    name = serializers.CharField(max_length=100)
+    password = serializers.CharField(max_length=100)
+    password_confirmation = serializers.CharField(max_length=100)
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"email": "Email already in use"})
+
+        if attrs.get("password") != attrs.get("password_confirmation"):
+            raise serializers.ValidationError(
+                {"password": "Password and password confirmation must match"}
+            )
+
+        return super().validate(attrs)
 
 
 class AddAddressSerializer(serializers.Serializer):

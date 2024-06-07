@@ -1,13 +1,18 @@
 import structlog
+import googlemaps
 import pandas as pd
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import generics
+from rest_framework import generics, status
 from django.db import transaction
 from datetime import datetime as dt, UTC
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from typing import cast, Optional
+from django.conf import settings
 
 from markets.serializers import (
     UploadCircularSerializer,
@@ -16,10 +21,13 @@ from markets.serializers import (
     CircularProductSerializer,
     SearchCircularSerializer,
     RankCircularProductListSerializer,
+    AdminMarketSerializer,
+    AdminMarketUnitSerializer,
 )
 
 from markets.models import (
     Market,
+    MarketUnit,
     Product,
     Circular,
     CircularProduct,
@@ -189,3 +197,69 @@ def upload_circular(request, pk):
         )
 
     return Response({"message": "Circular uploaded successfully."})
+
+
+# -
+
+
+class AdminMarketViewSet(ModelViewSet):
+    queryset = Market.objects.all()
+    serializer_class = AdminMarketSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        self.queryset = Market.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        request.data["user"] = request.user.id
+
+        return super().create(request, *args, **kwargs)
+
+
+#
+
+
+gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
+
+
+def get_address_by_cep(cep: str) -> Optional[str]:
+    try:
+        geocode_result = gmaps.geocode(cep)
+    except Exception as e:
+        logger.error(f"Error while geocoding address: {e}")
+        return None
+
+    geocode_result = cast(list[dict], geocode_result)
+
+    if len(geocode_result) == 0:
+        return None
+
+    return geocode_result[0]["formatted_address"]
+
+
+class AdminMarketUnitViewSet(ModelViewSet):
+    queryset = MarketUnit.objects.all()
+    serializer_class = AdminMarketUnitSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # get the market id from the request params
+        market_id = self.kwargs.get("pk")
+        market = get_object_or_404(Market, pk=market_id)
+        cep = serializer.validated_data["cep"]
+        address = get_address_by_cep(cep)
+
+        serializer.validated_data["address"] = address
+        serializer.validated_data["market"] = market
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

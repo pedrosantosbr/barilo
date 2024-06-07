@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 const form = z.object({
   email: z.string().email({ message: "Campo email é obrigatório" }),
@@ -22,6 +22,9 @@ export const LoginForm = () => {
   const { register, handleSubmit, formState } = useForm<LoginForm>({
     resolver: zodResolver(form),
   });
+
+  const searchParams = useSearchParams();
+  const redirect = searchParams?.get("redirect") || "";
 
   const router = useRouter();
 
@@ -68,9 +71,12 @@ export const LoginForm = () => {
         return;
       }
 
+      if (redirect !== "") {
+        console.log("here");
+        router.replace(redirect);
+        return;
+      }
       router.push("/encartes");
-
-      console.log(res);
     } catch (e) {
       console.log(e);
     } finally {

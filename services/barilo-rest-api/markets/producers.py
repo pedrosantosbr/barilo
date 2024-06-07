@@ -2,6 +2,8 @@ import json
 import pika
 import time
 import structlog
+
+from django.conf import settings
 from typing import Optional
 from dataclasses import dataclass
 
@@ -41,10 +43,12 @@ class CircularProductCreatedProducer:
         try:
             self.connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
-                    "rabbitmq",
+                    settings.RABBITMQ_HOST,
                     heartbeat=600,
                     blocked_connection_timeout=300,
-                    credentials=pika.PlainCredentials("barilo", "barilo"),
+                    credentials=pika.PlainCredentials(
+                        settings.RABBITMQ_USER, settings.RABBITMQ_PASSWORD
+                    ),
                 )
             )
             self.channel = self.connection.channel()

@@ -197,6 +197,7 @@ const Uploader: React.FC<{
   className?: string;
 }> = ({ setFile, className }) => {
   const [onDragEnterClass, setOnDragEnterClass] = React.useState("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -228,6 +229,7 @@ const Uploader: React.FC<{
       onDragLeave={() => setOnDragEnterClass("")}
     >
       <input
+        ref={fileInputRef}
         type="file"
         multiple
         onChange={handleFileChange}
@@ -235,7 +237,15 @@ const Uploader: React.FC<{
       />
       <UploadIcon fontSize={24} className="mb-4" />
       Arraste e solte arquivos aqui ou{" "}
-      <Button className="mt-4">Selectionar arquivo</Button>
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          fileInputRef.current?.click();
+        }}
+        className="mt-4"
+      >
+        Selectionar arquivo
+      </Button>
     </div>
   );
 };

@@ -13,6 +13,8 @@ services:
       - rabbitmq
     volumes:
       - ./services/barilo-rest-api:/src
+    env_file:
+      - ./services/barilo-rest-api/.env
 
   barilo-web:
     container_name: barilo-web
