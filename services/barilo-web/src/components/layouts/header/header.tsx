@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Loader2Icon, LogOut } from "lucide-react";
+import { HomeIcon, Loader2Icon, LogOut, Megaphone } from "lucide-react";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,7 @@ import { useState } from "react";
 import { preferenceCookieSchema, useAddress } from "@/contexts/address-context";
 import { cn } from "@/lib/utils";
 import { useSession, signOut } from "next-auth/react";
-import { Avatar } from "../ui/avatar";
+import { Avatar } from "../../ui/avatar";
 import { setCookie } from "nookies";
 
 import {
@@ -47,16 +47,16 @@ export const Header = () => {
         <div className="ml-auto">
           <nav>
             <ul className="flex space-x-4 items-center font-medium">
-              {/* <li>
+              <li>
                 <Link href="/" className="flex items-center">
                   <HomeIcon className="mr-2 w-4" /> Menu inicial
                 </Link>
               </li>
               <li>
-                <Link href="/ofertas" className="flex items-center">
+                <Link href="/" className="flex items-center">
                   <Megaphone className="mr-2 w-4" /> Encartes
                 </Link>
-              </li> */}
+              </li>
               {isAuthenticated && user && (
                 <li>
                   <ProfileDropdownMenu user={user} />
@@ -91,8 +91,8 @@ export const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/" className="">
-                  Publique seu encarte
+                <Link href="/admin/login" className="font-bold">
+                  Central do anunciante
                 </Link>
               </li>
             </ul>

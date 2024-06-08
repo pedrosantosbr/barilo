@@ -15,9 +15,9 @@ export default function AdminLayout({
   const router = useRouter();
 
   return (
-    <div className="bg-background">
+    <div className="bg-muted">
       <div className="pl-[250px]">
-        <div className="fixed left-0 border-r w-[250px] min-h-screen shadow-md bg-black/90 text-white">
+        <div className="fixed left-0 border-r w-[250px] min-h-screen shadow-md bg-amber-400">
           <h2 className="p-4">Barilo</h2>
           <h2 className="p-4 font-bold">Menu</h2>
           <div className="px-4">

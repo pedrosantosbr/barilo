@@ -1,6 +1,7 @@
 import structlog
 import googlemaps
 import pandas as pd
+import time
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -209,7 +210,7 @@ class AdminMarketViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
-        self.queryset = Market.objects.filter(user=request.user)
+        self.queryset = Market.objects.filter(user=request.user)[:1]
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):

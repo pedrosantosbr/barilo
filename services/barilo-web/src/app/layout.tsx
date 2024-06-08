@@ -6,6 +6,8 @@ import cn from "classnames";
 
 import { ThemeProvider } from "@/layouts/theme-provider";
 import { SessionProvider } from "next-auth/react";
+import { Header } from "@/components/layouts/header";
+import { Footer } from "@/components/layouts/footer";
 
 const dm = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 

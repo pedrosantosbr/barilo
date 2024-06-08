@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/header";
+import { Header } from "@/components/layouts/header";
 import { AddressContextProvider } from "@/contexts/address-context";
 import { SessionProvider } from "next-auth/react";
 

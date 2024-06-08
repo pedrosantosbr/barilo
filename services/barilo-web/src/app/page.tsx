@@ -1,76 +1,125 @@
-import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
+"use server";
 
-import Cooker3D from "@/assets/img/cooker-3d.png";
-import MegaPhone3D from "@/assets/img/megaphone-3d.png";
-import ShoppingCart3D from "@/assets/img/shopping-cart-3d.png";
-import Image from "next/image";
-import Link from "next/link";
+import { MapPinnedIcon, ShoppingCart } from "lucide-react";
+import { CircularListResponseSchema } from "@/entities/store";
+import { OffersTemplate } from "@/components/offers/offers-template";
 
-export default function Home() {
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
+import { getNextCookie } from "@/app/_utils";
+import { Header } from "@/components/layouts/header";
+import { Footer } from "@/components/layouts/footer";
+
+async function fetchCirculars() {
+  try {
+    const response = await fetch(
+      `${process.env.API_URL}/api/v1/circulars/search/`
+    );
+    const parsedData = CircularListResponseSchema.parse(await response.json());
+
+    return parsedData;
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    throw error;
+  }
+}
+
+async function fetchWhatsAppPhoneNumbers() {
+  try {
+    const resp = await fetch(
+      `${process.env.API_URL}/api/v1/whatsapp/phone-numbers/`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getNextCookie("barilo.access-token")}`,
+        },
+      }
+    );
+    if (!resp.ok) {
+      console.error("Failed to fetch phone numbers", resp.status);
+      return [];
+    }
+
+    const parsedData = (await resp.json()) as string[];
+    console.log(`🎃 parsedData:`, parsedData);
+    return parsedData;
+  } catch (error) {
+    // console.error("Failed to fetch data", error);
+    return [];
+  }
+}
+
+export default async function Circulars() {
+  const circulars = await fetchCirculars();
+  const phoneNumbers = await fetchWhatsAppPhoneNumbers();
+
   return (
-    <main className="flex min-h-screen overflow-y-auto flex-col items-center justify-center pb-40">
-      <div className="container space-y-10">
-        <div className="text-center text-5xl font-bold">
-          Em que posso te ajudar hoje?
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="lg:col-span-1">
-            <div className="border rounded-md shadow-sm p-6 space-y-2">
-              <div className="justify-center flex w-[180px] h-[150px] mx-auto">
-                <Image src={Cooker3D} alt="Cooker 3D" className="w-full" />
+    <>
+      <Header />
+      <main className="flex min-h-screen overflow-y-auto flex-col items-center pb-40">
+        <div className="h-28 border-b w-full bg-[url('/img/banner-2023102713131165106.jpg')] bg-cover">
+          <div className="container flex items-center h-28">
+            <div className="flex bg-white shadow-md items-center rounded-lg p-4 space-x-2">
+              <ShoppingCart className="w-5 h-5" />
+              <div className="tracking-tight font-bold">
+                Promoções de encartes
               </div>
-              <h1 className="text-xl font-bold">Receitas</h1>
-              <p className="font-medium text-sm">
-                Crie receitas incríveis e evite o desperdício de alimentos
-                utilizando apenas os ingredientes que você tem em casa.
-              </p>
-              <Link href={"/receitas"} className="w-full flex items-center">
-                Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
-              </Link>
-            </div>
-          </div>
-          <div className="lg:col-span-1">
-            <div className="border rounded-md shadow-sm p-6 space-y-2">
-              <div className="justify-center flex h-[150px] mx-auto">
-                <Image
-                  src={ShoppingCart3D}
-                  alt="Shopping Cart 3D"
-                  width={150}
-                  height={80}
-                />
-              </div>
-              <h1 className="text-xl font-bold">Compras</h1>
-              <p className="font-medium text-sm">
-                Compare o preço dos produtos em diferentes supermercados e
-                escolha onde fazer a sua compra do mês.
-              </p>
-              <Link href={"/simulador"} className="w-full flex items-center">
-                Fazer uma cotação <ArrowLongRightIcon className="ml-2 w-5" />
-              </Link>
-            </div>
-          </div>
-          <div className="lg:col-span-1">
-            <div className="border rounded-md shadow-sm p-6 space-y-2">
-              <div className="justify-center flex h-[150px] mx-auto">
-                <Image
-                  src={MegaPhone3D}
-                  alt="Megaphone 3D"
-                  width={150}
-                  height={80}
-                />
-              </div>
-              <h1 className="text-xl font-bold">Encartes</h1>
-              <p className="font-medium text-sm">
-                Descubra as promoções da semana e crie um comparativo de preços
-                entre os supermercados da sua região.
-              </p>
-              <Link href={"/ofertas"} className="w-full flex items-center">
-                Ver encartes <ArrowLongRightIcon className="ml-2 w-5" />
-              </Link>
             </div>
           </div>
         </div>
-      </div>
-    </main>
+
+        <div className="p-2 shadow-md w-full bg-background">
+          <div className="container flex items-center space-x-2">
+            <MapPinnedIcon className="w-4 h-4 text-muted-foreground" />
+            <div className="text-sm">Distância</div>
+            <Select>
+              <SelectTrigger className="w-[180px] h-8">
+                <SelectValue placeholder="0km" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0-10">Entre 0 e 10km</SelectItem>
+                <SelectItem value="20-30">Entre 20km e 30km</SelectItem>
+                <SelectItem value="40-50">Entre 40km e 50km</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="container space-y-10 pt-14">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-8">
+              <OffersTemplate circulars={circulars} />
+            </div>
+            <div className="col-span-4">
+              <div className="text-xl font-extrabold">Melhores Ofertas</div>
+              <ul className="flex text-sm pt-6 flex-wrap">
+                <li className="flex items-center justify-between bg-background border rounded-md px-2 py-1 shadow-md font-medium whitespace-nowrap mr-2 mb-2">
+                  <div className="mr-4">Banana</div>
+                  <div className="font-medium">2.99</div>
+                </li>
+                <li className="flex items-center justify-between bg-background border rounded-md px-2 py-1 shadow-md font-medium whitespace-nowrap mr-2 mb-2">
+                  <div className="mr-4">Arroz Palmares 5kg tipo 1</div>
+                  <div className="font-medium">4.99</div>
+                </li>
+                <li className="flex items-center justify-between bg-background border rounded-md px-2 py-1 shadow-md font-medium whitespace-nowrap mr-2 mb-2">
+                  <div className="mr-4">Carne bovina p/ churrasco</div>
+                  <div className="font-medium">4.99</div>
+                </li>
+              </ul>
+
+              {phoneNumbers.length === 0 && <ConnectWhatsAppNumber />}
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

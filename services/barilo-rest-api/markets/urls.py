@@ -26,7 +26,7 @@ urlpatterns = [
     ),
     # user resources
     path(
-        "admin/markets/", AdminMarketViewSet.as_view({"get": "list", "post": "create"})
+        "admin/market/", AdminMarketViewSet.as_view({"get": "list", "post": "create"})
     ),
     path(
         "admin/markets/<int:pk>/units",
