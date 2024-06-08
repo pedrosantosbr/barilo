@@ -22,9 +22,7 @@ pre-commit:
       glob: "services/barilo-rest-api/**"
       root: services/barilo-rest-api
       run: |
-        poetry shell
         poetry install --sync --no-root
         poetry run ruff check --fix .
         poetry run ruff format .
         poetry run ruff lint .
-        poetry deactivate
