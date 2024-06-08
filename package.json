@@ -1,0 +1,11 @@
+{
+  "name": "barilo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:pedrosantosbr/barilo.git",
+  "author": "Pedro Santos <pedro357bm@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev-up": "devops/scripts/setup"
+  }
+}

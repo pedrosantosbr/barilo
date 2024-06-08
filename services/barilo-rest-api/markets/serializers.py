@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from markets.models import Market, Circular, Product, CircularProduct
+from markets.models import (
+    Market,
+    Circular,
+    Product,
+    CircularProduct,
+    MarketUnit,
+)
 
 
 class UploadCircularSerializer(serializers.Serializer):
@@ -64,3 +70,16 @@ class RankCircularProductListSerializer(serializers.ModelSerializer):
     def get_markets(self, obj):
         # Assuming you want the market names from all related CircularProduct
         return [cp.circular.market.name for cp in obj.circularproduct_set.all()]
+
+
+class AdminMarketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Market
+        fields = "__all__"
+
+
+class AdminMarketUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MarketUnit
+        fields = "__all__"
+        extra_kwargs = {"address": {"required": False}, "market": {"required": False}}

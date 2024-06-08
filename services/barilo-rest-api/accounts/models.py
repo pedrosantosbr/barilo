@@ -1,4 +1,3 @@
-import uuid
 from datetime import UTC
 from datetime import datetime as dt
 
@@ -38,7 +37,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=254, unique=True)
     name = models.CharField(max_length=254, blank=True)
     is_staff = models.BooleanField(default=False)
@@ -55,3 +53,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_absolute_url(self):
         return "/users/%i/" % (self.pk)
+
+
+class WhatsAppNumber(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=11)

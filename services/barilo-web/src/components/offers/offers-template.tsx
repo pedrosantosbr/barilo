@@ -3,6 +3,7 @@
 import { FC, useState } from "react";
 
 import { CircularListResponse, Circular } from "@/entities/store";
+import { CheckCircle, MapPinned } from "lucide-react";
 
 type Offer = {
   product: string;
@@ -85,13 +86,8 @@ const data: StoreWithOffers[] = [
 export const OffersTemplate: FC<{ circulars: CircularListResponse }> = ({
   circulars,
 }) => {
-  const [filters, setFilters] = useState<Filters>({
-    lowerPrice: false,
-  });
-
   return (
     <div className="space-y-12">
-      <div className="text-left text-3xl font-extrabold">Encartes</div>
       <div className="flex flex-col space-y-4">
         {circulars.map((circular, idx) => (
           <CircularCard key={idx} circular={circular} />
@@ -103,22 +99,43 @@ export const OffersTemplate: FC<{ circulars: CircularListResponse }> = ({
 
 const CircularCard: FC<{ circular: Circular }> = ({ circular }) => {
   return (
-    <div className="bg-background rounded-lg p-4 border shadow-sm">
-      <div className="font-bold">{circular.title}</div>
-      <div className="flex space-x-2 text-sm text-muted-foreground">
-        <div className="">{circular.store.name}</div>
-        <div className="">{circular.store.address}</div>
+    <div className="bg-background border rounded-lg p-4 shadow-md">
+      <div className="flex space-x-4 items-center">
+        <div className="w-10 h-10 border rounded-lg bg-slate-200"></div>
+        <div className="flex flex-col flex-1">
+          <div className="flex justify-between items-center">
+            <h4 className="font-bold">Saldão de ofertas</h4>
+            <div className="text-xs italic text-muted-foreground font-medium">
+              Válido até 4 de Jul, 2024
+            </div>
+          </div>
+          <div className="flex space-x-2 text-sm text-muted-foreground">
+            <div className="">{circular.market.name}</div>
+          </div>
+        </div>
       </div>
       <ul className="text-sm mt-4">
         {circular.items.map((item, idx) => (
-          <li key={idx} className="flex space-x-2">
-            <div>{item.product.name}</div>
+          <li
+            key={idx}
+            className="flex space-x-2 items-center border-b border-dashed p-1"
+          >
+            {/* <div className="w-5 h-5 flex items-center">🛒</div> */}
+            <div className="font-medium tracking-wide capitalize">
+              {item.product.name}
+            </div>
             <div className="font-bold text-foreground">
               ${item.discount_price}
             </div>
           </li>
         ))}
       </ul>
+      <div className="pt-10 text-sm">
+        <div className="flex items-center">
+          <MapPinned size={12} className="mr-2" />
+          Address: Rua 1, 123
+        </div>
+      </div>
     </div>
   );
 };

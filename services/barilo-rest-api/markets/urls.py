@@ -6,9 +6,12 @@ from markets.views import (
     CircularProductViewSet,
     SearchCircularListView,
     RankCircularProductListView,
+    AdminMarketViewSet,
+    AdminMarketUnitViewSet,
 )
 
 urlpatterns = [
+    # public resources
     path("markets/", MarketViewSet.as_view({"get": "list", "post": "create"})),
     path("markets/<int:pk>/circulars/upload", upload_circular),
     path("markets/<int:pk>/circulars/", CircularViewSet.as_view({"get": "list"})),
@@ -20,5 +23,13 @@ urlpatterns = [
         "circulars/rank/",
         RankCircularProductListView.as_view(),
         name="rank-circulars",
+    ),
+    # user resources
+    path(
+        "admin/market/", AdminMarketViewSet.as_view({"get": "list", "post": "create"})
+    ),
+    path(
+        "admin/markets/<int:pk>/units",
+        AdminMarketUnitViewSet.as_view({"get": "list", "post": "create"}),
     ),
 ]

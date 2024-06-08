@@ -16,7 +16,7 @@ const CircularProductSchema = z.object({
   discount_price: z.string() // Using string to represent Decimal fields
 });
 
-const StoreSchema = z.object({
+const MarketSchema = z.object({
   id: z.number(),
   name: z.string(),
   address: z.string(),
@@ -28,7 +28,7 @@ const CircularSchema = z.object({
   id: z.number(),
   title: z.string(),
   description: z.string(),
-  store: StoreSchema,
+  market: MarketSchema,
   expiration_date: z.string(), // Using string to represent Date fields
   items: z.array(CircularProductSchema)
 });

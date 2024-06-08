@@ -1,13 +1,43 @@
 services:
-  # barilo-web:
-  #   container_name: barilo-web
-  #   build:
-  #     context: ./services/barilo-nextjs-chat-app
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - NODE_ENV=development
+  barilo-rest-api:
+    container_name: barilo-rest-api
+    build:
+      context: ./services/barilo-rest-api
+      dockerfile: ./build/rest-server/Dockerfile
+      target: local
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./services/barilo-rest-api:/src
+    env_file:
+      - ./services/barilo-rest-api/.env
+
+  barilo-web:
+    container_name: barilo-web
+    build:
+      context: ./services/barilo-web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./services/barilo-web:/app
+
+  nginx:
+    container_name: barilo-nginx
+    image: nginx:latest
+    ports:
+      - "9234:80"
+    volumes:
+      - ./services/barilo-api-gateway/server.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - barilo-rest-api
+      - barilo-web
 
   # barilo-core:
   #   build:

@@ -1,0 +1,27 @@
+# https://github.com/evilmartians/lefthook
+
+assert_lefthook_installed: true
+
+pre-commit:
+  follow: true
+
+  commands:
+    root-install:
+      glob: "**/*.{ts,js,tsx,jsx}"
+      run: |
+        bun install
+
+    barilo-web:
+      glob: "services/barilo-web/**"
+      root: services/barilo-web
+      run: |
+        bun install
+        bun lint
+
+    barilo-rest-api:
+      glob: "services/barilo-rest-api/**"
+      root: services/barilo-rest-api
+      run: |
+        poetry install --sync --no-root
+        poetry run ruff check --fix .
+        poetry run ruff format .

@@ -19,6 +19,11 @@ django-cors-headers = "^4.3.1"
 pika = "^1.3.2"
 grpcio = "^1.64.0"
 grpcio-tools = "^1.64.0"
+googlemaps = "^4.10.0"
+djangorestframework-simplejwt = "^5.3.1"
+psycopg = "^3.1.19"
+psycopg2 = "^2.9.9"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

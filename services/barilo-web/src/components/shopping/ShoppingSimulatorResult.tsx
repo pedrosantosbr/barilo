@@ -11,7 +11,7 @@ export function ShoppingSimulatorResult({
   bestOffer?: boolean;
 }) {
   return (
-    <div className="shadow-sm rounded-md border flex flex-col w-full">
+    <div className="shadow-sm bg-background rounded-md border flex flex-col w-full">
       <div className="flex items-center p-4">
         <div className="mr-4 w-[5%]">
           <ShoppingCartIcon className="w-8 mr-2" />

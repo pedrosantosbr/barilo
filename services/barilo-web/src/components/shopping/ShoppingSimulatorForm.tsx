@@ -70,7 +70,7 @@ export function ShoppingSimulatorForm() {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex items-center border p-1 rounded-md px-2">
+                  <div className="flex bg-white items-center border p-1 rounded-md px-2">
                     <SearchIcon className="w-4 mr-2 text-gray-500" />
                     <Input
                       className="border-none focus-visible:ring-offset-0 focus-visible:ring-0 h-8 focus:ring-0"
@@ -87,7 +87,7 @@ export function ShoppingSimulatorForm() {
         </form>
       </Form>
       {/*  */}
-      <div className="border shadow-md p-4 rounded-md mt-0.5">
+      <div className="border shadow-md p-4 rounded-md mt-0.5 bg-background">
         <ul className="text-sm space">
           <li className="hover:bg-gray-100 p-1 px-4 rounded-lg">
             Leite <strong>Longa Vida Integral</strong>

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)
+source ${REPO_ROOT}/devops/scripts/helpers
+
+if [[ ${SHELL} =~ "zsh" ]]; then
+  SHELL_CONFIG="~/.zshrc"
+elif [[ ${SHELL} =~ "bash" ]]; then
+  SHELL_CONFIG="~/.bashrc"
+else
+  SHELL_CONFIG="your shell configuration file (like ~/.bashrc)"
+fi
+
+# =============================================================================
+# Check for env vars that must be added
+
+ALL_SET="true"
+
+if [[ -z "${GOPATH:-}" ]]; then
+  warning "export GOPATH=~/go\t# Feel free to change the value but it must be a writable directory"
+  ALL_SET="false"
+fi
+
+if [[ ":${PATH}:" != *":${REPO_ROOT}/devops/scripts:"* ]]; then
+  warning "export PATH=\"${REPO_ROOT}/devops/scripts:\${PATH}\""
+  ALL_SET="false"
+fi
+
+# if [[ ":${PATH}:" != *":$(abspath "${REPO_ROOT}/..")/hax/bin:"* ]]; then
+#   warning "export PATH=\"\${PATH}:$(abspath "${REPO_ROOT}/..")/hax/bin\""
+#   ALL_SET="false"
+# fi
+
+if [[ ":${PATH}:" != *":${GOPATH:-not_a_real_gopath]}/bin:"* ]]; then
+  warning "export PATH=\"\${GOPATH}/bin:\${PATH}\""
+  ALL_SET="false"
+fi
+
+if [[ "${ALL_SET}" != "true" ]]; then
+  error "Please add the above export lines to ${SHELL_CONFIG} and restart your shell"
+fi
+
+# =============================================================================
+# More complex checks
+
+# If GOPATH does not exist, and it starts with the users home directory, then mkdir it for them
+if [[ ! -d ${GOPATH} && ("${GOPATH}" =~ "~/"* || "${GOPATH}" =~ "${HOME}/"*) ]]; then
+  info "Creating GOPATH: ${GOPATH}"
+  mkdir -p "${GOPATH}" || true
+fi
+
+if [[ ! -w ${GOPATH} ]]; then
+  error "GOPATH (${GOPATH}) is not writable or doesn't exist! Check that the directory exists and either change GOPATH to a writable directory (recommended) or run 'sudo chown -R $(whoami):$(whoami) ${GOPATH}'"
+fi
