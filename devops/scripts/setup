@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)
+source ${REPO_ROOT}/devops/scripts/helpers
+
+info "Setting up Barilo..."
+
+${REPO_ROOT}/devops/scripts/configure-shell
+
+ensure_docker
+
+install_homebrew
+
+brew_install_command aws 2.7.0 awscli
+brew_install_command go 1.21.1
+brew_install_command golangci-lint 1.55.0
+brew_install_command helm 3.9.4
+brew_install_command jq 1.6
+brew_install_command k3d 5.6.0
+brew_install_command kubectl 1.27.2 kubernetes-cli
+brew_install_command lefthook 1.5.5
+brew_install_command poetry 1.4.0
+brew_install_command tilt 0.30.13 tilt-dev/tap/tilt
+brew_install_command yq 3.1.0 python-yq
+brew_install_command ruff 0.2.1
+
+brew_install_library coreutils
+
+install_yarn
+
+lefthook install
+
+success "Setup complete"
