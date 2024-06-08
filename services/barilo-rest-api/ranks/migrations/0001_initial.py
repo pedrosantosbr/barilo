@@ -5,38 +5,67 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ProductRanking',
+            name="ProductRanking",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title_index', models.CharField(max_length=500)),
-                ('weight_index', models.CharField(max_length=255)),
-                ('brand_index', models.CharField(blank=True, max_length=255, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title_index", models.CharField(max_length=500)),
+                ("weight_index", models.CharField(max_length=255)),
+                (
+                    "brand_index",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='ProductRankingItem',
+            name="ProductRankingItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('expiration_date', models.DateField()),
-                ('circular_id', models.IntegerField()),
-                ('productcircular_id', models.IntegerField()),
-                ('productcircular_description', models.CharField(max_length=255)),
-                ('productcircular_discount_price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('product_weight', models.CharField(max_length=255)),
-                ('product_brand', models.CharField(blank=True, max_length=255, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('rank', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='ranks.productranking')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("expiration_date", models.DateField()),
+                ("circular_id", models.IntegerField()),
+                ("productcircular_id", models.IntegerField()),
+                ("productcircular_description", models.CharField(max_length=255)),
+                (
+                    "productcircular_discount_price",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
+                ("product_weight", models.CharField(max_length=255)),
+                (
+                    "product_brand",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "rank",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="ranks.productranking",
+                    ),
+                ),
             ],
         ),
     ]

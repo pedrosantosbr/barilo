@@ -25,4 +25,3 @@ pre-commit:
         poetry install --sync --no-root
         poetry run ruff check --fix .
         poetry run ruff format .
-        poetry run ruff lint .

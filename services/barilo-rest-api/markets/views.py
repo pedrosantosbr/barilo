@@ -1,7 +1,6 @@
 import structlog
 import googlemaps
 import pandas as pd
-import time
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
