@@ -52,7 +52,9 @@ services:
 
   postgres:
     container_name: barilo-postgres
-    image: postgres:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - 5432:5432
     environment:

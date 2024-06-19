@@ -7,7 +7,7 @@ from markets.views import (
     SearchCircularListView,
     RankCircularProductListView,
     AdminMarketViewSet,
-    AdminMarketUnitViewSet,
+    AdminStoreViewSet,
 )
 
 urlpatterns = [
@@ -30,6 +30,6 @@ urlpatterns = [
     ),
     path(
         "admin/markets/<int:pk>/units",
-        AdminMarketUnitViewSet.as_view({"get": "list", "post": "create"}),
+        AdminStoreViewSet.as_view({"get": "list", "post": "create"}),
     ),
 ]

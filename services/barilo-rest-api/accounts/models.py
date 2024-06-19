@@ -58,3 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class WhatsAppNumber(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=11)
+
+
+class UserGeolocation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

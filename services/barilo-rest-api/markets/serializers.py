@@ -4,7 +4,7 @@ from markets.models import (
     Circular,
     Product,
     CircularProduct,
-    MarketUnit,
+    Store,
 )
 
 
@@ -78,8 +78,8 @@ class AdminMarketSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AdminMarketUnitSerializer(serializers.ModelSerializer):
+class AdminStoreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MarketUnit
+        model = Store
         fields = "__all__"
         extra_kwargs = {"address": {"required": False}, "market": {"required": False}}

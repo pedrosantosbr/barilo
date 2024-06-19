@@ -22,12 +22,12 @@ from markets.serializers import (
     SearchCircularSerializer,
     RankCircularProductListSerializer,
     AdminMarketSerializer,
-    AdminMarketUnitSerializer,
+    AdminStoreSerializer,
 )
 
 from markets.models import (
     Market,
-    MarketUnit,
+    Store,
     Product,
     Circular,
     CircularProduct,
@@ -239,9 +239,9 @@ def get_address_by_cep(cep: str) -> Optional[str]:
     return geocode_result[0]["formatted_address"]
 
 
-class AdminMarketUnitViewSet(ModelViewSet):
-    queryset = MarketUnit.objects.all()
-    serializer_class = AdminMarketUnitSerializer
+class AdminStoreViewSet(ModelViewSet):
+    queryset = Store.objects.all()
+    serializer_class = AdminStoreSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
