@@ -91,7 +91,7 @@ export const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/admin/login" className="font-bold">
+                <Link href="/central-do-anunciante" className="font-bold">
                   Central do anunciante
                 </Link>
               </li>

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 
 export const AdminHeader = () => {
   const { status } = useSession();
@@ -76,7 +76,12 @@ export function ProfileDropdownMenu() {
         <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem
+          onClick={() => {
+            signOut();
+            redirect("/");
+          }}
+        >
           Sair
           <DropdownMenuShortcut>
             <LogOut className="w-4 text-black" />
