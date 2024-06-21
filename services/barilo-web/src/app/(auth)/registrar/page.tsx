@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { RegisterForm } from "@/components/register-form";
 
 export default async function Registrar() {
   return (
@@ -9,11 +8,7 @@ export default async function Registrar() {
       </div>
       <div className="border rounded bg-background p-8 flex flex-col w-[400px] space-y-4">
         <h2 className="font-bold text-lg">Criar uma nova conta</h2>
-        <Input placeholder="username" />
-        <Input placeholder="email" />
-        <Input placeholder="senha" type="password" />
-        <Input placeholder="confirmar senha" type="password" />
-        <Button>Criar conta</Button>
+        <RegisterForm />
       </div>
     </div>
   );
