@@ -11,8 +11,9 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from typing import cast, Optional
+from typing import cast, TypedDict
 from django.conf import settings
+from django.contrib.gis.geos import Point
 
 from markets.serializers import (
     UploadCircularSerializer,
@@ -22,12 +23,12 @@ from markets.serializers import (
     SearchCircularSerializer,
     RankCircularProductListSerializer,
     AdminMarketSerializer,
-    AdminStoreSerializer,
+    AdminLocationSerializer,
 )
 
 from markets.models import (
     Market,
-    Store,
+    Location,
     Product,
     Circular,
     CircularProduct,
@@ -37,7 +38,9 @@ from markets.producers import CircularProductCreatedProducer, CircularProductCre
 
 logger = structlog.get_logger(__name__)
 
-producer = CircularProductCreatedProducer()
+
+def get_producer():
+    return CircularProductCreatedProducer()
 
 
 class MarketViewSet(ModelViewSet):
@@ -187,6 +190,8 @@ def upload_circular(request, pk):
         )
 
         # xxx: This is the part that sends the message to RabbitMQ
+        # Lazy initialize and send the message to RabbitMQ
+        producer = get_producer()
         producer.publish(
             body=CircularProductCreated(
                 id=circularproduct.id,
@@ -220,11 +225,16 @@ class AdminMarketViewSet(ModelViewSet):
 
 #
 
-
 gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
 
 
-def get_address_by_cep(cep: str) -> Optional[str]:
+class Address(TypedDict):
+    address: str
+    lat: float
+    lng: float
+
+
+def search_address_with_geolocation_by_cep(cep: str) -> Address:
     try:
         geocode_result = gmaps.geocode(cep)
     except Exception as e:
@@ -236,27 +246,45 @@ def get_address_by_cep(cep: str) -> Optional[str]:
     if len(geocode_result) == 0:
         return None
 
-    return geocode_result[0]["formatted_address"]
+    location = geocode_result[0]["geometry"]["location"]
+    address = geocode_result[0]["formatted_address"]
+
+    return Address(address=address, lat=location["lat"], lng=location["lng"])
 
 
-class AdminStoreViewSet(ModelViewSet):
-    queryset = Store.objects.all()
-    serializer_class = AdminStoreSerializer
+class AdminLocationViewSet(ModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = AdminLocationSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    lookup_field = "market_id"
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        exists = Location.objects.filter(
+            cep=serializer.validated_data["cep"],
+            market_id=self.kwargs.get("market_id"),
+        ).exists()
+        if exists:
+            return Response(
+                {"message": "Store already exists for this market."}, status=400
+            )
         # get the market id from the request params
-        market_id = self.kwargs.get("pk")
+        market_id = self.kwargs.get("market_id")
         market = get_object_or_404(Market, pk=market_id)
         cep = serializer.validated_data["cep"]
-        address = get_address_by_cep(cep)
 
-        serializer.validated_data["address"] = address
+        resp = search_address_with_geolocation_by_cep(cep)
+
+        serializer.validated_data["address"] = resp["address"]
         serializer.validated_data["market"] = market
+
+        # lng => x
+        # lat => y
+        serializer.validated_data["geolocation"] = Point((resp["lng"], resp["lat"]))
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

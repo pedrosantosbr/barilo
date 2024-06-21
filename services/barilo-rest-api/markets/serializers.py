@@ -4,7 +4,7 @@ from markets.models import (
     Circular,
     Product,
     CircularProduct,
-    Store,
+    Location,
 )
 
 
@@ -78,8 +78,25 @@ class AdminMarketSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AdminStoreSerializer(serializers.ModelSerializer):
+class AdminLocationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Store
+        model = Location
         fields = "__all__"
-        extra_kwargs = {"address": {"required": False}, "market": {"required": False}}
+        extra_kwargs = {
+            "address": {"required": False},
+            "market": {"required": False},
+            "geolocation": {"required": False},
+        }
+
+    def validate_cep(self, value):
+        if len(value) != 8:
+            raise serializers.ValidationError("CEP must have 8 characters.")
+        return value
+
+    def to_representation(self, instance):
+        return {
+            "id": instance.id,
+            "address": instance.address,
+            "cep": instance.cep,
+            "market": instance.market.name,
+        }

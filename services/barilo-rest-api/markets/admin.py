@@ -1,11 +1,11 @@
 from django.contrib import admin
 from markets.models import (
     Market,
-    Store,
+    Location,
     Product,
     Circular,
     CircularProduct,
 )
 
 # Register your models here.
-admin.site.register([Market, Store, Product, Circular, CircularProduct])
+admin.site.register([Market, Location, Product, Circular, CircularProduct])

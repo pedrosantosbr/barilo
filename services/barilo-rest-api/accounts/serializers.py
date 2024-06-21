@@ -2,7 +2,7 @@ from rest_framework import serializers
 from accounts.models import User
 
 
-class UserSerializer(serializers.Serializer):
+class RegisterUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     name = serializers.CharField(max_length=100)
     password = serializers.CharField(max_length=100)
@@ -19,6 +19,13 @@ class UserSerializer(serializers.Serializer):
             )
 
         return super().validate(attrs)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "name", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 
 class AddAddressSerializer(serializers.Serializer):

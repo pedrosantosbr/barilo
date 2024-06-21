@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from markets.models import Store
+from markets.models import Location
 
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         )
         radius = 3
         nearby = (
-            Store.objects.annotate(distance=Distance("location", user_location))
+            Location.objects.annotate(distance=Distance("location", user_location))
             .filter(distance__lte=radius * 1000)
             .order_by("distance")
         )

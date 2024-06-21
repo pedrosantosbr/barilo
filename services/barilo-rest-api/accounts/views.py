@@ -20,7 +20,7 @@ from accounts.models import User, WhatsAppNumber
 from accounts.serializers import (
     LoggedInUserSerializerReadOnly,
     WhatsAppNumberSerializer,
-    UserSerializer,
+    RegisterUserSerializer,
 )
 
 import structlog
@@ -160,7 +160,7 @@ def whatsapp_numbers(request):
 
 @api_view(["POST"])
 def create_account(request):
-    serialzier = UserSerializer(data=request.data)
+    serialzier = RegisterUserSerializer(data=request.data)
     serialzier.is_valid(raise_exception=True)
 
     user = User.objects.create_user(

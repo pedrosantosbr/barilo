@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default async function Login() {
+export default async function Registrar() {
   return (
     <div className="min-h-screen relative flex items-center justify-center">
       <div className="bg-amber-400 p-4 absolute top-0 w-full h-14 border-b">
