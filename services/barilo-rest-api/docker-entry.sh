@@ -56,4 +56,7 @@ function run_setup() (
   python3 manage.py runserver 0.0.0.0:8000
 )
 
+function run_grpc_server() {
+  python3 manage.py rungrpc
+}
 main $@

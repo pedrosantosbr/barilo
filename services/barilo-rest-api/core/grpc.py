@@ -16,9 +16,16 @@ from concurrent import futures
 
 logger = structlog.get_logger(__name__)
 
+# This config is for local development
+# sys.path.append(
+#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../lib/python")
+# )
+
+# TODO: use `.pth` file to add the path to the python path later
+# This config is for docker-compose
 sys.path.append(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../lib/python")
-)
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python")
+)  # the 1 parameter might be not necessary becase we are using the absolute path in the 2 parameter
 
 
 class ManagementUtility:
@@ -81,10 +88,9 @@ class ManagementUtility:
 
         # -
 
-        import helloworld_pb2, helloworld_pb2_grpc  # noqa
         import productranking_pb2, productranking_pb2_grpc  # noqa
 
-        from markets.models import Market, CircularProduct  # noqa
+        from markets.models import CircularProduct  # noqa
         from ranks.models import ProductRanking, ProductRankingItem  # noqa
 
         class ProductRankingServiceImplementation(
