@@ -10,7 +10,7 @@ from datetime import datetime as dt, UTC
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from core.authentication import JWTAuthentication
 from typing import cast, TypedDict
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -113,11 +113,11 @@ class RankCircularProductListView(generics.ListAPIView):
 
 @api_view(["POST"])
 @transaction.atomic
-def upload_circular(request, pk):
+def upload_circular(request, market_id):
     serializer = UploadCircularSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    market = get_object_or_404(Market, pk=pk)
+    market = get_object_or_404(Market, pk=market_id)
 
     file = request.FILES["csv"]
 
@@ -249,6 +249,9 @@ def search_address_with_geolocation_by_cep(cep: str) -> Address:
     location = geocode_result[0]["geometry"]["location"]
     address = geocode_result[0]["formatted_address"]
 
+    if location is None or address is None:
+        raise ValueError("Invalid geocode result")
+
     return Address(address=address, lat=location["lat"], lng=location["lng"])
 
 
@@ -278,6 +281,7 @@ class AdminLocationViewSet(ModelViewSet):
         cep = serializer.validated_data["cep"]
 
         resp = search_address_with_geolocation_by_cep(cep)
+        print("resp", resp)
 
         serializer.validated_data["address"] = resp["address"]
         serializer.validated_data["market"] = market

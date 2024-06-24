@@ -95,7 +95,7 @@ class AdminLocationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {
-            "id": instance.id,
+            "id": str(instance.id),
             "address": instance.address,
             "cep": instance.cep,
             "market": instance.market.name,

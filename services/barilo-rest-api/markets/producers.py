@@ -22,7 +22,7 @@ class CircularProductCreated:
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "description": self.description,
             "product_weight": self.product_weight,
             "product_brand": self.product_brand,

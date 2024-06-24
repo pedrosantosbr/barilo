@@ -4,13 +4,6 @@ import { MapPinnedIcon, ShoppingCart } from "lucide-react";
 import { CircularListResponseSchema } from "@/entities/store";
 import { OffersTemplate } from "@/components/offers/offers-template";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
 import { getNextCookie } from "@/app/_utils";
 import { Header } from "@/components/layouts/header";

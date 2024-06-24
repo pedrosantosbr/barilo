@@ -20,7 +20,7 @@ urlpatterns = [
         name="market-list",
     ),
     path(
-        "markets/<int:pk>/circulars/upload",
+        "markets/<str:market_id>/circulars/upload/",
         upload_circular,
         name="upload-circular",
     ),
