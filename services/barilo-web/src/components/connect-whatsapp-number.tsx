@@ -107,7 +107,7 @@ export const ConnectWhatsAppNumber = () => {
   };
 
   return (
-    <div className="border bg-white shadow-lg space-y-4  p-5 rounded-lg mt-10">
+    <div className="border bg-white shadow-lg space-y-4 p-5 rounded-lg">
       <h1 className="text-xl font-bold">Receber Ofertas pelo Whatsapp</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">

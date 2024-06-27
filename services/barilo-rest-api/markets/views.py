@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import generics, status
 from django.db import transaction
 from datetime import datetime as dt, UTC
+from django.utils.timezone import now
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +15,7 @@ from core.authentication import JWTAuthentication
 from typing import cast, TypedDict
 from django.conf import settings
 from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 
 from markets.serializers import (
     UploadCircularSerializer,
@@ -77,8 +79,8 @@ class SearchCircularListView(generics.ListAPIView):
     serializer_class = SearchCircularSerializer
 
     def get_queryset(self):
-        return (
-            Circular.objects.prefetch_related("market")
+        queryset = (
+            Circular.objects.prefetch_related("location")
             .prefetch_related(
                 Prefetch(
                     "circularproduct_set",
@@ -88,18 +90,45 @@ class SearchCircularListView(generics.ListAPIView):
             .filter(expiration_date__gte=dt.now(UTC).strftime("%Y-%m-%d"))
         )
 
+        lng = self.request.query_params.get("lng")
+        lat = self.request.query_params.get("lat")
+        rad = self.request.query_params.get("rad")
+
+        if lat and lng and rad:
+            try:
+                user_location = Point(
+                    float(lng),
+                    float(lat),
+                    srid=4326,
+                )
+                rad = float(rad)
+            except (ValueError, TypeError):
+                user_location = None
+
+        if user_location:
+            nearby = (
+                Location.objects.annotate(
+                    distance=Distance("geolocation", user_location)
+                )
+                .filter(distance__lte=rad * 1000)
+                .order_by("distance")
+                .values_list("id", flat=True)
+            )
+
+            queryset = queryset.filter(location_id__in=nearby)
+
+        return queryset
+
 
 class RankCircularProductListView(generics.ListAPIView):
     serializer_class = RankCircularProductListSerializer
 
     def get_queryset(self):
-        now = dt.now(UTC).date()  # Get the current date in a timezone-aware manner
-
         return Product.objects.prefetch_related(
             Prefetch(
                 "circularproduct_set",
                 queryset=CircularProduct.objects.select_related("circular").filter(
-                    circular__expiration_date__gte=now
+                    circular__expiration_date__gte=now()
                 ),
             )
         )
@@ -113,11 +142,11 @@ class RankCircularProductListView(generics.ListAPIView):
 
 @api_view(["POST"])
 @transaction.atomic
-def upload_circular(request, market_id):
+def upload_circular(request, location_id):
     serializer = UploadCircularSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    market = get_object_or_404(Market, pk=market_id)
+    location = get_object_or_404(Location, pk=location_id)
 
     file = request.FILES["csv"]
 
@@ -129,9 +158,9 @@ def upload_circular(request, market_id):
     }
     df = pd.read_csv(file, dtype=dtype_spec)
 
-    logger.info(f"Reading circular for market {market.name}", file=df)
+    logger.info(f"Reading circular for market {location.market.name}", file=df)
 
-    circular = market.circular_set.create(
+    circular = location.circular_set.create(
         title=serializer.validated_data["title"],
         description=serializer.validated_data["description"],
         expiration_date=serializer.validated_data["expiration_date"],
@@ -151,7 +180,7 @@ def upload_circular(request, market_id):
         product = Product.objects.filter(
             name=product_name,
             brand=row["brand"],
-            market=market,
+            market=location.market,
             weight=row["weight"],
         ).first()
 
@@ -161,7 +190,7 @@ def upload_circular(request, market_id):
                 price=product_price,
                 weight=row["weight"],
                 brand=row["brand"],
-                market=market,
+                market=location.market,
             )
 
         circularproduct = (
@@ -288,7 +317,11 @@ class AdminLocationViewSet(ModelViewSet):
 
         # lng => x
         # lat => y
-        serializer.validated_data["geolocation"] = Point((resp["lng"], resp["lat"]))
+        serializer.validated_data["geolocation"] = Point(
+            resp["lng"],
+            resp["lat"],
+            srid=4326,
+        )
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

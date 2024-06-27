@@ -2,6 +2,7 @@ import googlemaps
 
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ParseError
 from core.authentication import JWTAuthentication
 from rest_framework.decorators import (
     api_view,
@@ -12,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 from typing import cast
-from typing import Optional
+from typing import TypedDict
 
 from accounts.serializers import PreferencesSerializer
 
@@ -27,25 +28,37 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-location_key = "barilo.address"
-preferences_key = "barilo.preferences"
+LOCATION_KEY = "barilo.address"
+PREFERENCES_KEY = "barilo.preferences"
 
 gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
 
 
-def get_address_by_cep(cep: str) -> Optional[str]:
+class Address(TypedDict):
+    address: str
+    lat: float
+    lng: float
+
+
+def search_address_with_geolocation_by_cep(cep: str) -> Address:
     try:
         geocode_result = gmaps.geocode(cep)
     except Exception as e:
         logger.error(f"Error while geocoding address: {e}")
-        return None
+        raise ParseError("Error while geocoding address")
 
     geocode_result = cast(list[dict], geocode_result)
 
     if len(geocode_result) == 0:
-        return None
+        raise ParseError("Address not found")
 
-    return geocode_result[0]["formatted_address"]
+    location = geocode_result[0]["geometry"]["location"]
+    address = geocode_result[0]["formatted_address"]
+
+    if location is None or address is None:
+        raise ParseError("Invalid geocode result")
+
+    return Address(address=address, lat=location["lat"], lng=location["lng"])
 
 
 @api_view(["GET"])
@@ -66,19 +79,10 @@ def set_address(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    address = get_address_by_cep(cep)
-    if not address:
-        return Response(
-            {"error": f"Address not found for cep {cep}"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    matrix = gmaps.distance_matrix(origins=address, destinations="Av. Paulista, 1000")
-
-    logger.info(f"Matrix: {matrix}")
+    address = search_address_with_geolocation_by_cep(cep)
 
     response = Response({"address": address}, status=status.HTTP_201_CREATED)
-    response.set_cookie(location_key, address)
+    response.set_cookie(LOCATION_KEY, address)
 
     return response
 
@@ -86,36 +90,31 @@ def set_address(request):
 @api_view(["GET", "POST"])
 def user_preferences(request):
     if request.method == "GET":
-        serializer = PreferencesSerializer(data=request.session.get(preferences_key))
+        serializer = PreferencesSerializer(data=request.session.get(PREFERENCES_KEY))
         if not serializer.is_valid():
-            request.session[preferences_key] = {}
+            request.session[PREFERENCES_KEY] = {}
 
-        response = Response(request.session[preferences_key])
-        response.set_cookie(preferences_key, request.session[preferences_key])
+        response = Response(request.session[PREFERENCES_KEY])
+        response.set_cookie(PREFERENCES_KEY, request.session[PREFERENCES_KEY])
         return response
 
     serializer = PreferencesSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    address = get_address_by_cep(serializer.validated_data["cep"])
-    if not address:
-        return Response(
-            {"error": f"Address not found for cep {serializer.validated_data['cep']}"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+    address = search_address_with_geolocation_by_cep(serializer.validated_data["cep"])
 
-    request.session[preferences_key] = {
+    request.session[PREFERENCES_KEY] = {
         "cep": serializer.validated_data["cep"],
         "distance": serializer.validated_data["distance"],
         "address": address,
     }
 
     response = Response(
-        request.session[preferences_key], status=status.HTTP_201_CREATED
+        request.session[PREFERENCES_KEY], status=status.HTTP_201_CREATED
     )
 
     response.set_cookie(
-        preferences_key, request.session[preferences_key], samesite="lax"
+        PREFERENCES_KEY, request.session[PREFERENCES_KEY], samesite="lax"
     )
 
     return response

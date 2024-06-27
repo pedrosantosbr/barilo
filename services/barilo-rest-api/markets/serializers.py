@@ -41,15 +41,44 @@ class CircularSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class LocationSerializer(serializers.ModelSerializer):
+    lat = serializers.SerializerMethodField()
+    lng = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Location
+        fields = ["id", "cep", "address", "lat", "lng"]
+
+    def get_lng(self, obj):
+        return obj.geolocation.x
+
+    def get_lat(self, obj):
+        return obj.geolocation.y
+
+
 class SearchCircularSerializer(serializers.ModelSerializer):
-    market = MarketSerializer(read_only=True)
     items = CircularProductSerializer(
         source="circularproduct_set", many=True, read_only=True
     )
+    market = serializers.SerializerMethodField()
 
     class Meta:
         model = Circular
-        fields = ["id", "title", "description", "market", "expiration_date", "items"]
+        fields = [
+            "id",
+            "title",
+            "description",
+            "expiration_date",
+            "market",
+            "items",
+        ]
+
+    def get_market(self, obj):
+        return {
+            "id": obj.location.market.id,
+            "name": obj.location.market.name,
+            "address": obj.location.address,
+        }
 
 
 class RankCircularProductListSerializer(serializers.ModelSerializer):

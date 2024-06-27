@@ -9,6 +9,7 @@ import { getNextCookie } from "@/app/_utils";
 import { Header } from "@/components/layouts/header";
 import { Footer } from "@/components/layouts/footer";
 import { SelectDistancePreference } from "@/components/preferences/select-distance-preference";
+import { useState } from "react";
 
 async function fetchCirculars() {
   try {
@@ -71,7 +72,7 @@ export default async function Circulars() {
 
         <div className="p-2 shadow-md w-full bg-background">
           <div className="container flex items-center space-x-2">
-            <MapPinnedIcon className="w-4 h-4 text-muted-foreground" />
+            <MapPinnedIcon className="w-4 h-4" />
             <SelectDistancePreference />
           </div>
         </div>
@@ -82,7 +83,7 @@ export default async function Circulars() {
               <OffersTemplate circulars={circulars} />
             </div>
             <div className="col-span-4">
-              <div className="text-xl font-extrabold">Melhores Ofertas</div>
+              {/* <div className="text-xl font-extrabold">Melhores Ofertas</div>
               <ul className="flex text-sm pt-6 flex-wrap">
                 <li className="flex items-center justify-between bg-background border rounded-md px-2 py-1 shadow-md font-medium whitespace-nowrap mr-2 mb-2">
                   <div className="mr-4">Banana</div>
@@ -96,7 +97,7 @@ export default async function Circulars() {
                   <div className="mr-4">Carne bovina p/ churrasco</div>
                   <div className="font-medium">4.99</div>
                 </li>
-              </ul>
+              </ul> */}
 
               {phoneNumbers.length === 0 && <ConnectWhatsAppNumber />}
             </div>

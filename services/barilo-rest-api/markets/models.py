@@ -47,9 +47,10 @@ class Product(BaseModel):
 
 
 class Circular(BaseModel):
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+
     title = models.CharField(max_length=100)
     description = models.TextField()
-    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     expiration_date = models.DateField()
 
     class Meta:
