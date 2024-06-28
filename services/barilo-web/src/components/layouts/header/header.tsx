@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { HomeIcon, Loader2Icon, LogOut, Megaphone } from "lucide-react";
+import {
+  HomeIcon,
+  Loader2Icon,
+  LogOut,
+  Megaphone,
+  ShoppingBasket,
+  ShoppingCart,
+} from "lucide-react";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { preferenceCookieSchema, useAddress } from "@/contexts/address-context";
+import {
+  preferenceCookieSchema,
+  usePreferences,
+} from "@/contexts/preferences-context";
 import { cn } from "@/lib/utils";
 import { useSession, signOut } from "next-auth/react";
 import { Avatar } from "../../ui/avatar";
@@ -47,14 +57,19 @@ export const Header = () => {
         <div className="ml-auto">
           <nav>
             <ul className="flex space-x-4 items-center font-medium">
-              <li>
+              {/* <li>
                 <Link href="/" className="flex items-center">
                   <HomeIcon className="mr-2 w-4" /> Menu inicial
+                </Link>
+              </li> */}
+              <li>
+                <Link href="/" className="flex items-center">
+                  <ShoppingCart className="mr-2 w-4" /> E-Cart
                 </Link>
               </li>
               <li>
                 <Link href="/" className="flex items-center">
-                  <Megaphone className="mr-2 w-4" /> Encartes
+                  <Megaphone className="mr-2 w-4" /> Promoções & Encartes
                 </Link>
               </li>
               {isAuthenticated && user && (
@@ -104,7 +119,7 @@ export const Header = () => {
 };
 
 export function AddressModal() {
-  const { address } = useAddress();
+  const { address } = usePreferences();
   const [cep, setCep] = useState<string>("");
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);

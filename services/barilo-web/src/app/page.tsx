@@ -8,8 +8,7 @@ import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
 import { getNextCookie } from "@/app/_utils";
 import { Header } from "@/components/layouts/header";
 import { Footer } from "@/components/layouts/footer";
-import { SelectDistancePreference } from "@/components/preferences/select-distance-preference";
-import { useState } from "react";
+import { SelectRadiusPreference } from "@/components/preferences/select-radius-preference";
 
 async function fetchCirculars() {
   try {
@@ -73,7 +72,7 @@ export default async function Circulars() {
         <div className="p-2 shadow-md w-full bg-background">
           <div className="container flex items-center space-x-2">
             <MapPinnedIcon className="w-4 h-4" />
-            <SelectDistancePreference />
+            <SelectRadiusPreference />
           </div>
         </div>
 

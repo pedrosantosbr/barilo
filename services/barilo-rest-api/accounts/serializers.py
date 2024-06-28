@@ -34,7 +34,7 @@ class AddAddressSerializer(serializers.Serializer):
 
 class PreferencesSerializer(serializers.Serializer):
     cep = serializers.CharField(max_length=8)
-    distance = serializers.IntegerField()
+    radius = serializers.IntegerField(required=False)
 
 
 class LoggedInUserSerializerReadOnly(serializers.Serializer):

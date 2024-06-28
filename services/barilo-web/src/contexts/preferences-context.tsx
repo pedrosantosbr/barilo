@@ -7,30 +7,30 @@ import { parseCookies } from "nookies";
 export const preferenceCookieSchema = z.object({
   cep: z.string().optional(),
   address: z.string().optional(),
-  distance: z.number().optional(),
+  radius: z.number().optional(),
 });
 
 type AddressContext = {
   address?: string;
   cep?: string;
-  distance?: number;
+  radius?: number;
   setAddress: (address: string) => void;
   setCep: (cep: string) => void;
-  setDistance: (distance: number) => void;
+  setRadius: (radius: number) => void;
 };
 
 const initialState: AddressContext = {
   address: undefined,
   cep: undefined,
-  distance: undefined,
+  radius: undefined,
   setAddress: () => {},
   setCep: () => {},
-  setDistance: () => {},
+  setRadius: () => {},
 };
 
-export const AddressContext = createContext(initialState);
+export const PreferencesContext = createContext(initialState);
 
-export const AddressContextProvider = ({
+export const PreferencesContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
@@ -39,9 +39,7 @@ export const AddressContextProvider = ({
     initialState.address
   );
   const [cep, setCep] = useState<string | undefined>(initialState.cep);
-  const [distance, setDistance] = useState<number | undefined>(
-    initialState.distance
-  );
+  const [radius, setRadius] = useState<number | undefined>(initialState.radius);
 
   useEffect(() => {
     const cookies = parseCookies(null);
@@ -52,7 +50,7 @@ export const AddressContextProvider = ({
         );
         setAddress(v.address);
         setCep(v.cep);
-        setDistance(v.distance);
+        setRadius(v.radius);
       } catch (e) {
         return;
       }
@@ -60,18 +58,20 @@ export const AddressContextProvider = ({
   }, []);
 
   return (
-    <AddressContext.Provider
-      value={{ address, cep, distance, setAddress, setCep, setDistance }}
+    <PreferencesContext.Provider
+      value={{ address, cep, radius, setAddress, setCep, setRadius }}
     >
       {children}
-    </AddressContext.Provider>
+    </PreferencesContext.Provider>
   );
 };
 
-export const useAddress = () => {
-  const context = useContext(AddressContext);
+export const usePreferences = () => {
+  const context = useContext(PreferencesContext);
   if (context === undefined) {
-    throw new Error("useAddress must be used within a AddressContextProvider");
+    throw new Error(
+      "usePreferences must be used within a PreferencesContextProvider"
+    );
   }
   return context;
 };

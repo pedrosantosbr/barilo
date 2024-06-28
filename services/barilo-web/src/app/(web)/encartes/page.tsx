@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
 import { getNextCookie } from "@/app/_utils";
-import { SelectDistancePreference } from "@/components/preferences/select-distance-preference";
+import { SelectRadiusPreference } from "@/components/preferences/select-radius-preference";
 
 async function fetchCirculars() {
   try {
@@ -75,7 +75,7 @@ export default async function Circulars() {
       <div className="p-2 shadow-md w-full bg-background">
         <div className="container flex items-center space-x-2">
           <MapPinnedIcon className="w-4 h-4 text-muted-foreground" />
-          <SelectDistancePreference />
+          <SelectRadiusPreference />
         </div>
       </div>
 

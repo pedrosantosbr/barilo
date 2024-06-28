@@ -6,7 +6,7 @@ import { useState } from "react";
 
 type SliderProps = React.ComponentProps<typeof Slider>;
 
-export const SelectDistancePreference = ({
+export const SelectRadiusPreference = ({
   className,
   ...props
 }: SliderProps) => {
@@ -14,7 +14,7 @@ export const SelectDistancePreference = ({
 
   return (
     <div className="h-10 w-[500px] flex items-center space-x-4">
-      <div className="text-sm ">Filtrar por distância:</div>
+      <div className="text-sm">Filtrar por distância:</div>
       <Slider
         value={radius}
         onValueChange={(e) => setRadius(e)}

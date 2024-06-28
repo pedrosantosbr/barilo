@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,84 +15,146 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Location',
+            name="Location",
             fields=[
-                ('id', models.CharField(editable=False, max_length=26, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('address', models.CharField(max_length=500)),
-                ('cep', models.CharField(max_length=8)),
-                ('geolocation', django.contrib.gis.db.models.fields.PointField(srid=4326)),
+                (
+                    "id",
+                    models.CharField(
+                        editable=False, max_length=26, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("address", models.CharField(max_length=500)),
+                ("cep", models.CharField(max_length=8)),
+                (
+                    "geolocation",
+                    django.contrib.gis.db.models.fields.PointField(srid=4326),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Circular',
+            name="Circular",
             fields=[
-                ('id', models.CharField(editable=False, max_length=26, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('expiration_date', models.DateField()),
-                ('location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='markets.location')),
+                (
+                    "id",
+                    models.CharField(
+                        editable=False, max_length=26, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                ("expiration_date", models.DateField()),
+                (
+                    "location",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="markets.location",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Market',
+            name="Market",
             fields=[
-                ('id', models.CharField(editable=False, max_length=26, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100)),
-                ('phone_number', models.CharField(max_length=11)),
-                ('cnpj', models.CharField(max_length=14)),
-                ('email', models.EmailField(max_length=254)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.CharField(
+                        editable=False, max_length=26, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100)),
+                ("phone_number", models.CharField(max_length=11)),
+                ("cnpj", models.CharField(max_length=14)),
+                ("email", models.EmailField(max_length=254)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='location',
-            name='market',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='markets.market'),
+            model_name="location",
+            name="market",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="markets.market"
+            ),
         ),
         migrations.CreateModel(
-            name='Product',
+            name="Product",
             fields=[
-                ('id', models.CharField(editable=False, max_length=26, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('weight', models.CharField(max_length=100)),
-                ('brand', models.CharField(blank=True, max_length=100, null=True)),
-                ('market', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='markets.market')),
+                (
+                    "id",
+                    models.CharField(
+                        editable=False, max_length=26, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("weight", models.CharField(max_length=100)),
+                ("brand", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "market",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="markets.market"
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='CircularProduct',
+            name="CircularProduct",
             fields=[
-                ('id', models.CharField(editable=False, max_length=26, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('discount_price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('circular', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='markets.circular')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='markets.product')),
+                (
+                    "id",
+                    models.CharField(
+                        editable=False, max_length=26, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("description", models.TextField(blank=True, null=True)),
+                (
+                    "discount_price",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
+                (
+                    "circular",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="markets.circular",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="markets.product",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

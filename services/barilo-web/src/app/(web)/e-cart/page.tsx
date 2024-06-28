@@ -14,27 +14,9 @@ export default function Shopping() {
         </div>
       </div>
       <div className="container space-y-10 mt-10">
-        <div className="text-center text-5xl font-bold">
-          Simulador de compras
-        </div>
         <div className="flex justify-center">
           <div className="w-full">
             <ShoppingSimulatorForm />
-            <div className="shopping-list mt-12 space-y-2">
-              <ShoppingSimulatorResult
-                storeName="Supermercado Pérola"
-                bestOffer
-                total={122.23}
-              />
-              <ShoppingSimulatorResult
-                storeName="Supermercado Royal"
-                total={140.05}
-              />
-              <ShoppingSimulatorResult
-                storeName="Supermercado Bramil"
-                total={152.78}
-              />
-            </div>
           </div>
         </div>
       </div>

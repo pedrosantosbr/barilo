@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layouts/header";
-import { AddressContextProvider } from "@/contexts/address-context";
+import { PreferencesContextProvider } from "@/contexts/address-context";
 import { SessionProvider } from "next-auth/react";
 
 export default function WebLayout({
@@ -12,10 +12,10 @@ export default function WebLayout({
   return (
     <div>
       <SessionProvider>
-        <AddressContextProvider>
+        <PreferencesContextProvider>
           <Header />
           {children}
-        </AddressContextProvider>
+        </PreferencesContextProvider>
       </SessionProvider>
     </div>
   );

@@ -34,13 +34,13 @@ PREFERENCES_KEY = "barilo.preferences"
 gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
 
 
-class Address(TypedDict):
+class Location(TypedDict):
     address: str
     lat: float
     lng: float
 
 
-def search_address_with_geolocation_by_cep(cep: str) -> Address:
+def search_user_location(cep: str) -> Location:
     try:
         geocode_result = gmaps.geocode(cep)
     except Exception as e:
@@ -50,7 +50,7 @@ def search_address_with_geolocation_by_cep(cep: str) -> Address:
     geocode_result = cast(list[dict], geocode_result)
 
     if len(geocode_result) == 0:
-        raise ParseError("Address not found")
+        raise ParseError("Location not found")
 
     location = geocode_result[0]["geometry"]["location"]
     address = geocode_result[0]["formatted_address"]
@@ -58,7 +58,7 @@ def search_address_with_geolocation_by_cep(cep: str) -> Address:
     if location is None or address is None:
         raise ParseError("Invalid geocode result")
 
-    return Address(address=address, lat=location["lat"], lng=location["lng"])
+    return Location(address=address, lat=location["lat"], lng=location["lng"])
 
 
 @api_view(["GET"])
@@ -79,7 +79,7 @@ def set_address(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    address = search_address_with_geolocation_by_cep(cep)
+    address = search_user_location(cep)
 
     response = Response({"address": address}, status=status.HTTP_201_CREATED)
     response.set_cookie(LOCATION_KEY, address)
@@ -101,12 +101,12 @@ def user_preferences(request):
     serializer = PreferencesSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    address = search_address_with_geolocation_by_cep(serializer.validated_data["cep"])
+    location = search_user_location(serializer.validated_data["cep"])
 
     request.session[PREFERENCES_KEY] = {
         "cep": serializer.validated_data["cep"],
-        "distance": serializer.validated_data["distance"],
-        "address": address,
+        "radius": serializer.validated_data["radius"],
+        "location": location,
     }
 
     response = Response(
