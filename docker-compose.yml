@@ -16,6 +16,21 @@ services:
     env_file:
       - ./services/barilo-rest-api/.env
 
+  barilo-consumer-api:
+    container_name: barilo-consumer-api
+    build:
+      context: .
+      dockerfile: ./services/barilo-rest-api/build/rabbitmq-consumer/Dockerfile
+      target: local
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./services/barilo-rest-api:/src
+    env_file:
+      - ./services/barilo-rest-api/.env
+
   barilo-grpc-api:
     container_name: barilo-grpc-api
     build:

@@ -105,9 +105,11 @@ def user_preferences(request):
 
     request.session[PREFERENCES_KEY] = {
         "cep": serializer.validated_data["cep"],
-        "radius": serializer.validated_data["radius"],
         "location": location,
     }
+
+    if "radius" not in serializer.validated_data:
+        request.session[PREFERENCES_KEY]["radius"] = 10
 
     response = Response(
         request.session[PREFERENCES_KEY], status=status.HTTP_201_CREATED

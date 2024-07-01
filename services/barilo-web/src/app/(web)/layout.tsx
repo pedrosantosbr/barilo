@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layouts/header";
-import { PreferencesContextProvider } from "@/contexts/address-context";
+import { PreferencesContextProvider } from "@/contexts/preferences-context";
 import { SessionProvider } from "next-auth/react";
 
 export default function WebLayout({

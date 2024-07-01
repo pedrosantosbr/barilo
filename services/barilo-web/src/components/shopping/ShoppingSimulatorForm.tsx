@@ -97,7 +97,7 @@ export function ShoppingSimulatorForm() {
         </ul>
       </div>
       {/* selected products */}
-      <div className="flex flex-col p-4">
+      {/* <div className="flex flex-col p-4">
         <ul className="text-sm space-y-1">
           <li className="flex items-center">
             <div>
@@ -144,7 +144,7 @@ export function ShoppingSimulatorForm() {
             </div>
           </li>
         </ul>
-      </div>
+      </div> */}
     </div>
   );
 }

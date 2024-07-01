@@ -6,8 +6,12 @@ import { parseCookies } from "nookies";
 
 export const preferenceCookieSchema = z.object({
   cep: z.string().optional(),
-  address: z.string().optional(),
   radius: z.number().optional(),
+  location: z.object({
+    address: z.string(),
+    lat: z.number(),
+    lng: z.number(),
+  }),
 });
 
 type AddressContext = {
@@ -48,7 +52,7 @@ export const PreferencesContextProvider = ({
         const v = preferenceCookieSchema.parse(
           JSON.parse(cookies["barilo.preferences"])
         );
-        setAddress(v.address);
+        setAddress(v.location.address);
         setCep(v.cep);
         setRadius(v.radius);
       } catch (e) {

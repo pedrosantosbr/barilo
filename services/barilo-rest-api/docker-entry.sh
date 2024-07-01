@@ -17,6 +17,10 @@ function main() (
       run_setup
       ;;
 
+    "runconsumer")
+      python3 manage.py start_rabbitmq_consumer
+      ;;
+    
     "") ;;
 
     *)

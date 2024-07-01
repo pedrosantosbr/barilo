@@ -39,7 +39,9 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DefaultUser, Session } from "next-auth";
+import { Session } from "next-auth";
+import { ShoppingSimulatorForm } from "@/components/shopping/ShoppingSimulatorForm";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Header = () => {
   const { status, data } = useSession();
@@ -49,13 +51,19 @@ export const Header = () => {
 
   return (
     <header className="bg-amber-400 dark:bg-black">
-      <div className="h-14 flex items-center container">
-        <div className="">
+      <div className="h-14 grid items-center grid-cols-12 container gap-4">
+        <div className="col-span-2">
           <div className="font-bold text-2xl">Barilo</div>
         </div>
-        <div className="flex items-center self-center"></div>
-        <div className="ml-auto">
-          <nav>
+        {/* <ShoppingSimulatorForm /> */}
+        <div className="col-span-6">
+          <Input
+            className=""
+            placeholder="Digite um produto que deseja comprar"
+          />
+        </div>
+        <div className="col-span-4 justify-self-end">
+          <nav className="">
             <ul className="flex space-x-4 items-center font-medium">
               {/* <li>
                 <Link href="/" className="flex items-center">
@@ -141,7 +149,7 @@ export function AddressModal() {
           method: "POST",
           body: JSON.stringify({
             cep: cep.replace(/[^0-9]/g, ""),
-            distance: 1,
+            radius: 10,
           }),
           headers: {
             "Content-Type": "application/json",

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 import structlog
@@ -18,6 +19,8 @@ import logging
 import dotenv
 
 dotenv.load_dotenv()
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python"))
 
 
 def get_settings(name, default=None):

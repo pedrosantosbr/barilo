@@ -23,9 +23,9 @@ logger = structlog.get_logger(__name__)
 
 # TODO: use `.pth` file to add the path to the python path later
 # This config is for docker-compose
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python")
-)  # the 1 parameter might be not necessary becase we are using the absolute path in the 2 parameter
+# sys.path.append(
+#     os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python")
+# )  # the 1 parameter might be not necessary becase we are using the absolute path in the 2 parameter
 
 
 class ManagementUtility:
