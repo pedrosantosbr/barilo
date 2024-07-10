@@ -1,4 +1,5 @@
 import json
+from pika.exchange_type import ExchangeType
 
 from rabbitmq.consumer import BaseConsumer
 from abc import ABC, abstractmethod
@@ -24,6 +25,11 @@ class ProductService(ABC):
 class ProductConsumer(BaseConsumer):
     svc: ProductService
 
+    EXCHANGE = "ranking_exchange"
+    EXCHANGE_TYPE = ExchangeType.topic
+    QUEUE = "ranking_queue"
+    ROUTING_KEY = "rank.*.key"
+
     def __init__(self, amqp_url, svc: ProductService):
         super().__init__(amqp_url)
         self.svc = svc
@@ -34,7 +40,7 @@ class ProductConsumer(BaseConsumer):
 
         message = json.loads(body)
 
-        if topic == "circularproduct.created.key":
+        if topic == "rank.created.key":
             try:
                 params = ProductPriceRankUpdated(**message)
             except Exception as e:

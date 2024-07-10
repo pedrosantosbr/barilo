@@ -4,6 +4,7 @@ import pandas as pd
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.exceptions import ValidationError
 from rest_framework import generics, status
 from django.db import transaction
 from datetime import datetime as dt, UTC
@@ -94,16 +95,25 @@ class SearchCircularListView(generics.ListAPIView):
         lat = self.request.query_params.get("lat")
         rad = self.request.query_params.get("rad")
 
-        if lat and lng and rad:
-            try:
-                user_location = Point(
-                    float(lng),
-                    float(lat),
-                    srid=4326,
-                )
-                rad = float(rad)
-            except (ValueError, TypeError):
-                user_location = None
+        if not (lng and lat and rad):
+            raise ValidationError({"message": "Missing query parameters"})
+
+        user_location = None
+        try:
+            user_location = Point(
+                float(lng),
+                float(lat),
+                srid=4326,
+            )
+            rad = float(rad)
+        except (ValueError, TypeError):
+            logger.error(
+                "Invalid query parameters",
+                lng=lng,
+                lat=lat,
+                rad=rad,
+            )
+            return queryset
 
         if user_location:
             nearby = (

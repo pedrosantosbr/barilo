@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  HomeIcon,
-  Loader2Icon,
-  LogOut,
-  Megaphone,
-  ShoppingBasket,
-  ShoppingCart,
-} from "lucide-react";
+import { Loader2Icon, LogOut, Megaphone, ShoppingCart } from "lucide-react";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,8 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Session } from "next-auth";
-import { ShoppingSimulatorForm } from "@/components/shopping/ShoppingSimulatorForm";
-import { Textarea } from "@/components/ui/textarea";
 
 export const Header = () => {
   const { status, data } = useSession();

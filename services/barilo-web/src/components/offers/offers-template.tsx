@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC } from "react";
 
 import { CircularListResponse, Circular } from "@/entities/store";
-import { CheckCircle, MapPinned } from "lucide-react";
+import { MapPinned } from "lucide-react";
 
 type Offer = {
   product: string;
@@ -89,9 +89,15 @@ export const OffersTemplate: FC<{ circulars: CircularListResponse }> = ({
   return (
     <div className="space-y-12">
       <div className="flex flex-col space-y-4">
-        {circulars.map((circular, idx) => (
-          <CircularCard key={idx} circular={circular} />
-        ))}
+        {circulars.length == 0 && (
+          <div className="border rounded-lg p-4 shadow-sm bg-background text-center">
+            <h4>Por favor, selecione um endereço para buscar encartes</h4>
+          </div>
+        )}
+        {circulars.length > 0 &&
+          circulars.map((circular, idx) => (
+            <CircularCard key={idx} circular={circular} />
+          ))}
       </div>
     </div>
   );

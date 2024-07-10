@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/pedrosantosbr/barilo/internal"
-	"github.com/pedrosantosbr/barilo/internal/admin/internal/postgresql/db"
+	"github.com/pedrosantosbr/barilo/internal/admin/postgresql/db"
 	"github.com/pedrosantosbr/barilo/lib/errors"
 )
 

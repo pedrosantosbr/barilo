@@ -13,7 +13,10 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pedrosantosbr/barilo/internal/admin/internal/rest"
+	// Bounded-Context: Admin
+	adminpostgresql "github.com/pedrosantosbr/barilo/internal/admin/postgresql"
+	adminrest "github.com/pedrosantosbr/barilo/internal/admin/rest"
+	adminservices "github.com/pedrosantosbr/barilo/internal/admin/services"
 	"github.com/pedrosantosbr/barilo/lib/tracing"
 	"github.com/pedrosantosbr/barilo/lib/vault"
 
@@ -185,7 +188,7 @@ func newServer(conf *serverConfig) (*http.Server, error) {
 	}
 
 	// - register repositories
-	storeRepo := rest.NewStore(conf.DB)
+	storeRepo := adminpostgresql.NewStore(conf.DB)
 	productRepo := adminpostgresql.NewProduct(conf.DB)
 	circularRepo := adminpostgresql.NewCircular(conf.DB)
 	discountRepo := adminpostgresql.NewDiscount(conf.DB)

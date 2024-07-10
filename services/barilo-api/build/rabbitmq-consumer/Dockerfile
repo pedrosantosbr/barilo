@@ -56,11 +56,11 @@ ENV \
 
 RUN ln -s /src/static /static
 
-COPY ./services/barilo-rest-api/pyproject.toml ./services/barilo-rest-api/poetry.lock /src/
+COPY ./services/barilo-api/pyproject.toml ./services/barilo-api/poetry.lock /src/
 
-ENTRYPOINT ["./docker-entry.sh", "rungrpc"]
+ENTRYPOINT ["./docker-entry.sh", "runconsumer"]
 
-COPY ./services/barilo-rest-api .
+COPY ./services/barilo-api .
 COPY lib/python /lib/python
 
 RUN chmod +x ./docker-entry.sh
