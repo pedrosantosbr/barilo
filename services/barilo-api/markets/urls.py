@@ -1,11 +1,6 @@
 from django.urls import path
 from markets.views import (
     MarketViewSet,
-    upload_circular,
-    CircularViewSet,
-    CircularProductViewSet,
-    SearchCircularListView,
-    RankCircularProductListView,
     AdminMarketViewSet,
     AdminLocationViewSet,
 )
@@ -18,31 +13,6 @@ urlpatterns = [
         "markets/",
         MarketViewSet.as_view({"get": "list"}),
         name="market-list",
-    ),
-    path(
-        "markets/<str:location_id>/circulars/upload/",
-        upload_circular,
-        name="upload-circular",
-    ),
-    path(
-        "markets/<int:pk>/circulars/",
-        CircularViewSet.as_view({"get": "list"}),
-        name="circular-list",
-    ),
-    path(
-        "circulars/<int:pk>/prices/",
-        CircularProductViewSet.as_view({"get": "list"}),
-        name="circular-product-list",
-    ),
-    path(
-        "circulars/search/",
-        SearchCircularListView.as_view(),
-        name="search-circulars",
-    ),
-    path(
-        "circulars/rank/",
-        RankCircularProductListView.as_view(),
-        name="rank-circulars",
     ),
     # user resources
     path(
