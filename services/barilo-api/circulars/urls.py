@@ -1,7 +1,7 @@
 from django.urls import path
 from circulars.views import upload_circular, CircularProductViewSet, SearchCircularListView, RankCircularProductListView
 
-app_name = "markets"
+app_name = "circulars"
 
 urlpatterns = [
     path(

@@ -1,5 +1,5 @@
-from django.contrib.gis.db import models
 import ulid
+from django.contrib.gis.db import models
 
 
 class BaseModel(models.Model):

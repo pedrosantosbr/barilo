@@ -33,7 +33,7 @@ def upload_circular(request):
 
     location = get_object_or_404(Location, pk=serializer.validated_data["location_id"])
 
-    file = request.FILES["csv"]
+    file = request.FILES["file"]
 
     dtype_spec = {
         "name": str,
@@ -41,7 +41,12 @@ def upload_circular(request):
         "weight": str,
         "brand": str,
     }
-    df = pd.read_csv(file, dtype=dtype_spec)
+    
+    try:
+        df = pd.read_csv(file, dtype=dtype_spec)
+    except Exception as e:
+        logger.error("Error reading CSV file", error=str(e))
+        return Response({"message": "Error reading CSV file."}, status=400)
 
     logger.info(f"Reading circular for market {location.market.name}", file=df)
 
@@ -53,6 +58,7 @@ def upload_circular(request):
 
     # check if products already exist
     for _, row in df.iterrows():
+        logger.info("Processing row", row=row)
         product_name = row["name"].lower()
 
         try:

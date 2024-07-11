@@ -1,5 +1,7 @@
+import ulid
 from django.db import models
 from markets.models import Location, Product
+
 
 
 class BaseModel(models.Model):

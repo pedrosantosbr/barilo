@@ -13,7 +13,7 @@ class UploadCircularSerializer(serializers.Serializer):
     title = serializers.CharField()
     description = serializers.CharField()
     expiration_date = serializers.DateTimeField()
-    csv = serializers.FileField()
+    file = serializers.FileField()
 
 
 class CircularProductSerializer(serializers.ModelSerializer):
