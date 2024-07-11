@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { HomeIcon, Loader2Icon, LogOut, Megaphone } from "lucide-react";
+import { Loader2Icon, LogOut, Megaphone, ShoppingCart } from "lucide-react";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { preferenceCookieSchema, useAddress } from "@/contexts/address-context";
+import {
+  preferenceCookieSchema,
+  usePreferences,
+} from "@/contexts/preferences-context";
 import { cn } from "@/lib/utils";
 import { useSession, signOut } from "next-auth/react";
 import { Avatar } from "../../ui/avatar";
@@ -29,7 +32,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DefaultUser, Session } from "next-auth";
+import { Session } from "next-auth";
 
 export const Header = () => {
   const { status, data } = useSession();
@@ -39,22 +42,33 @@ export const Header = () => {
 
   return (
     <header className="bg-amber-400 dark:bg-black">
-      <div className="h-14 flex items-center container">
-        <div className="">
+      <div className="h-14 grid items-center grid-cols-12 container gap-4">
+        <div className="col-span-2">
           <div className="font-bold text-2xl">Barilo</div>
         </div>
-        <div className="flex items-center self-center"></div>
-        <div className="ml-auto">
-          <nav>
+        {/* <ShoppingSimulatorForm /> */}
+        <div className="col-span-6">
+          <Input
+            className=""
+            placeholder="Digite um produto que deseja comprar"
+          />
+        </div>
+        <div className="col-span-4 justify-self-end">
+          <nav className="">
             <ul className="flex space-x-4 items-center font-medium">
-              <li>
+              {/* <li>
                 <Link href="/" className="flex items-center">
                   <HomeIcon className="mr-2 w-4" /> Menu inicial
+                </Link>
+              </li> */}
+              <li>
+                <Link href="/" className="flex items-center">
+                  <ShoppingCart className="mr-2 w-4" /> E-Cart
                 </Link>
               </li>
               <li>
                 <Link href="/" className="flex items-center">
-                  <Megaphone className="mr-2 w-4" /> Encartes
+                  <Megaphone className="mr-2 w-4" /> Promoções & Encartes
                 </Link>
               </li>
               {isAuthenticated && user && (
@@ -91,7 +105,7 @@ export const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/admin/login" className="font-bold">
+                <Link href="/central-do-anunciante" className="font-bold">
                   Central do anunciante
                 </Link>
               </li>
@@ -104,7 +118,7 @@ export const Header = () => {
 };
 
 export function AddressModal() {
-  const { address } = useAddress();
+  const { address } = usePreferences();
   const [cep, setCep] = useState<string>("");
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
@@ -126,7 +140,7 @@ export function AddressModal() {
           method: "POST",
           body: JSON.stringify({
             cep: cep.replace(/[^0-9]/g, ""),
-            distance: 1,
+            radius: 10,
           }),
           headers: {
             "Content-Type": "application/json",

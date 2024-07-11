@@ -10,7 +10,6 @@ ENV HOSTNAME=::
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm install --global bun
 
-
 WORKDIR /app
 
 COPY ./package.json .

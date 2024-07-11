@@ -6,8 +6,7 @@ import cn from "classnames";
 
 import { ThemeProvider } from "@/layouts/theme-provider";
 import { SessionProvider } from "next-auth/react";
-import { Header } from "@/components/layouts/header";
-import { Footer } from "@/components/layouts/footer";
+import { PreferencesContextProvider } from "@/contexts/preferences-context";
 
 const dm = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -31,7 +30,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <PreferencesContextProvider>{children}</PreferencesContextProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

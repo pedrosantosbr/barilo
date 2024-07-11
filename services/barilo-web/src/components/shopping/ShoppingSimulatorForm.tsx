@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import {
   Form,
@@ -36,10 +35,10 @@ import {
   User,
 } from "lucide-react";
 import React from "react";
-import { Textarea } from "../ui/textarea";
+import { TrashIcon } from "@radix-ui/react-icons";
 
 const formSchema = z.object({
-  search: z.string().nonempty(),
+  search: z.string(),
 });
 
 export function ShoppingSimulatorForm() {
@@ -98,44 +97,54 @@ export function ShoppingSimulatorForm() {
         </ul>
       </div>
       {/* selected products */}
-      <div className="flex flex-col p-4">
-        <ul className="text-sm space-y-2">
+      {/* <div className="flex flex-col p-4">
+        <ul className="text-sm space-y-1">
           <li className="flex items-center">
             <div>
               <span className="font-bold">2x</span> Patinho moído{" "}
               <kbd className="price">Kg</kbd>
             </div>
-            <div className="px-4 font-bold">❌</div>
+            <div className="px-4 font-bold">
+              <TrashIcon />
+            </div>
           </li>
           <li className="flex items-center">
             <div>
               <span className="font-bold">2x</span> Leite longa vida integral{" "}
               <kbd className="price">1L</kbd>
             </div>
-            <div className="px-4 font-bold">❌</div>
+            <div className="px-4 font-bold">
+              <TrashIcon />
+            </div>
           </li>
           <li className="flex items-center">
             <div>
               <span className="font-bold">1x</span> Arroz Palmares{" "}
               <kbd className="price">5Kg</kbd>
             </div>
-            <div className="px-4 font-bold">❌</div>
+            <div className="px-4 font-bold">
+              <TrashIcon />
+            </div>
           </li>
           <li className="flex items-center">
             <div>
               <span className="font-bold">4x</span> Leite em pó Ninho 400g
               <kbd className="price">Lata</kbd>
             </div>
-            <div className="px-4 font-bold">❌</div>
+            <div className="px-4 font-bold">
+              <TrashIcon />
+            </div>
           </li>
           <li className="flex items-center">
             <div>
               <span className="font-bold">2kg</span> Linguiça de pernil
             </div>
-            <div className="px-4 font-bold">❌</div>
+            <div className="px-4 font-bold">
+              <TrashIcon />
+            </div>
           </li>
         </ul>
-      </div>
+      </div> */}
     </div>
   );
 }

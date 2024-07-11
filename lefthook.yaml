@@ -25,3 +25,8 @@ pre-commit:
         poetry install --sync --no-root
         poetry run ruff check --fix .
         poetry run ruff format .
+        git diff --quiet --exit-code
+        if [ $? -ne 0 ]; then
+          echo "Some files were modified by the formatter. Please stage the changes and commit again."
+          exit 1
+        fi

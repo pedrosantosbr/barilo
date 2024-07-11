@@ -16,7 +16,7 @@ const config = {
       padding: "6rem",
       screens: {
         "2xl": "1400px",
-        "lg": "1024px",
+        lg: "1024px",
       },
     },
     extend: {
@@ -57,7 +57,7 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        body: "#1b1642"
+        body: "#1b1642",
       },
       borderRadius: {
         lg: "var(--radius)",

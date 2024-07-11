@@ -2,8 +2,8 @@ services:
   barilo-rest-api:
     container_name: barilo-rest-api
     build:
-      context: ./services/barilo-rest-api
-      dockerfile: ./build/rest-server/Dockerfile
+      context: .
+      dockerfile: ./services/barilo-api/build/rest-server/Dockerfile
       target: local
     ports:
       - "8000:8000"
@@ -12,9 +12,40 @@ services:
       - redis
       - rabbitmq
     volumes:
-      - ./services/barilo-rest-api:/src
+      - ./services/barilo-api:/src
     env_file:
-      - ./services/barilo-rest-api/.env
+      - ./services/barilo-api/.env
+
+  barilo-consumer-api:
+    container_name: barilo-consumer-api
+    build:
+      context: .
+      dockerfile: ./services/barilo-api/build/rabbitmq-consumer/Dockerfile
+      target: local
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./services/barilo-api:/src
+    env_file:
+      - ./services/barilo-api/.env
+
+  barilo-grpc-api:
+    container_name: barilo-grpc-api
+    build:
+      context: .
+      dockerfile: ./services/barilo-api/build/grpc-server/Dockerfile
+      target: local
+    depends_on:
+      - barilo-rest-api
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./services/barilo-api:/src
+    env_file:
+      - ./services/barilo-api/.env
 
   barilo-web:
     container_name: barilo-web
@@ -52,7 +83,9 @@ services:
 
   postgres:
     container_name: barilo-postgres
-    image: postgres:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - 5432:5432
     environment:
