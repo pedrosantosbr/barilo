@@ -4,32 +4,14 @@ import time
 import structlog
 
 from django.conf import settings
-from typing import Optional
-from dataclasses import dataclass
+from barilo.schemas.events import ProductEvent
 
-ROUTING_KEY = "circularproduct.created.key"
-EXCHANGE = "circularproduct_exchange"
+EXCHANGE = "products_exchange"
 
 logger = structlog.get_logger(__name__)
 
 
-@dataclass(frozen=True, slots=True)
-class CircularProductCreated:
-    id: int
-    description: str
-    product_weight: str
-    product_brand: Optional[str] = None
-
-    def to_dict(self):
-        return {
-            "id": str(self.id),
-            "description": self.description,
-            "product_weight": self.product_weight,
-            "product_brand": self.product_brand,
-        }
-
-
-class CircularProductCreatedProducer:
+class ProductCreatedProducer:
     def __init__(self) -> None:
         self.retries = 0
         while not self.connect():
@@ -39,6 +21,7 @@ class CircularProductCreatedProducer:
                 time.sleep(5)
                 break
 
+    # TODO: move this method to an abstract class
     def connect(self):
         try:
             self.connection = pika.BlockingConnection(
@@ -60,16 +43,16 @@ class CircularProductCreatedProducer:
             logger.error("Error connecting to RabbitMQ", error=e)
             return False
 
-    def publish(self, body: CircularProductCreated):
+    def publish(self, body: ProductEvent):
         # properties = pika.BasicProperties(method)
 
         try:
             self.channel.basic_publish(
                 exchange=EXCHANGE,
-                routing_key=ROUTING_KEY,
+                routing_key="product.uploaded.key",
                 body=json.dumps(body.to_dict()),
                 # properties=properties,
             )
         except Exception as e:
             logger.error("Error publishing message", error=e)
-            raise Exception("Error publishing CircularProductCreated") from e
+            raise Exception("Error publishing ProductCreated") from e

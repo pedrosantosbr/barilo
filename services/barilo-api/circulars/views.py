@@ -12,7 +12,8 @@ from django.db.models import Prefetch
 from markets.models import Location, Product
 from circulars.models import CircularProduct, Circular
 from circulars.serializers import (UploadCircularSerializer, RankCircularProductListSerializer, CircularSerializer, CircularProductSerializer,SearchCircularSerializer,)
-from circulars.producers import CircularProductCreatedProducer, CircularProductCreated
+from circulars.producers import ProductCreatedProducer
+from barilo.schemas.events import ProductEvent
 
 
 import structlog
@@ -21,7 +22,7 @@ logger = structlog.get_logger(__name__)
 
 
 def get_producer():
-    return CircularProductCreatedProducer()
+    return ProductCreatedProducer()
 
 
 # Create your views here.
@@ -113,7 +114,7 @@ def upload_circular(request):
         # Lazy initialize and send the message to RabbitMQ
         producer = get_producer()
         producer.publish(
-            body=CircularProductCreated(
+            body=ProductEvent(
                 id=circularproduct.id,
                 description=circularproduct.description,
                 product_weight=product.weight,

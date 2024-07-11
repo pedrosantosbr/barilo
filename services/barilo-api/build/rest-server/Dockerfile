@@ -58,9 +58,11 @@ RUN ln -s /src/static /static
 
 COPY ./services/barilo-api/pyproject.toml ./services/barilo-api/poetry.lock /src/
 
+
 ENTRYPOINT ["./docker-entry.sh", "runsetup"]
 
 COPY ./services/barilo-api .
+COPY lib/python /lib/python
 
 RUN chmod +x ./docker-entry.sh
 

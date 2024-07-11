@@ -3,34 +3,28 @@ from pika.exchange_type import ExchangeType
 
 from rabbitmq.consumer import BaseConsumer
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from barilo.schemas.events import ProductEvent   
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
 
-@dataclass(frozen=True, slots=True)
-class ProductPriceRankUpdated:
-    product_id: int
-    productcircular_id: int
-
-
-class ProductService(ABC):
+class SearchService(ABC):
     @abstractmethod
-    def update_product_price_rank(self, params):
+    def update_products_catalog(self, params):
         pass
 
 
-class ProductConsumer(BaseConsumer):
-    svc: ProductService
+class SearchConsumer(BaseConsumer):
+    svc: SearchService
 
-    EXCHANGE = "ranking_exchange"
+    EXCHANGE = "products_exchange"
     EXCHANGE_TYPE = ExchangeType.topic
-    QUEUE = "ranking_queue"
-    ROUTING_KEY = "rank.*.key"
+    QUEUE = "search_queue"
+    ROUTING_KEY = "product.*.key"
 
-    def __init__(self, amqp_url, svc: ProductService):
+    def __init__(self, amqp_url, svc: SearchService):
         super().__init__(amqp_url)
         self.svc = svc
 
@@ -40,14 +34,15 @@ class ProductConsumer(BaseConsumer):
 
         message = json.loads(body)
 
-        if topic == "rank.created.key":
+        if topic == "product.uploaded.key":
             try:
-                params = ProductPriceRankUpdated(**message)
+                params = ProductEvent(**message)
             except Exception as e:
                 logger.info(
-                    "👾 [x] Message does not match ProductPriceRankUpdated schema: %s",
+                    "👾 [x] Message does not match ProductEvent schema: %s",
                     e=e,
                 )
+                raise e
 
             try:
                 self.svc.update_product_price_rank(params)
@@ -55,3 +50,4 @@ class ProductConsumer(BaseConsumer):
                 logger.info(
                     "👾 [x] Error updating circular product price rank: %s", e=e
                 )
+                raise e

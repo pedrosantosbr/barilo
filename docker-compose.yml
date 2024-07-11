@@ -31,21 +31,21 @@ services:
     env_file:
       - ./services/barilo-api/.env
 
-  barilo-grpc-api:
-    container_name: barilo-grpc-api
-    build:
-      context: .
-      dockerfile: ./services/barilo-api/build/grpc-server/Dockerfile
-      target: local
-    depends_on:
-      - barilo-rest-api
-      - postgres
-      - redis
-      - rabbitmq
-    volumes:
-      - ./services/barilo-api:/src
-    env_file:
-      - ./services/barilo-api/.env
+  # barilo-grpc-api:
+  #   container_name: barilo-grpc-api
+  #   build:
+  #     context: .
+  #     dockerfile: ./services/barilo-api/build/grpc-server/Dockerfile
+  #     target: local
+  #   depends_on:
+  #     - barilo-rest-api
+  #     - postgres
+  #     - redis
+  #     - rabbitmq
+  #   volumes:
+  #     - ./services/barilo-api:/src
+  #   env_file:
+  #     - ./services/barilo-api/.env
 
   barilo-web:
     container_name: barilo-web

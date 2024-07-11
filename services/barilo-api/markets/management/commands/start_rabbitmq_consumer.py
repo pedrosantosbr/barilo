@@ -17,27 +17,32 @@
 #     Easier to pass arguments and options to the command using Django's built-in command argument parsing.
 
 from django.core.management.base import BaseCommand
-from markets.consumers import ProductConsumer, ProductService
-from markets.workers import ProductWorker
+from markets.consumers import SearchConsumer, SearchService
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
 
-class ProductServiceImpl(ProductService):
-    def update_product_price_rank(self, params):
-        logger.info("👾 [x] Updating product price rank: %s", params)
+class ProductServiceImpl(SearchService):
+    def update_products_catalog(self, params):
+        logger.info("👾 [x] fetching agolia...", params=params)
 
 
 class Command(BaseCommand):
     help = "Launches Listener for user_created message : RaabitMQ"
 
     def handle(self, *args, **options):
-        consumer = ProductConsumer(
+        consumer = SearchConsumer(
             "amqp://barilo:barilo@barilo-rabbitmq:5672/%2F", ProductServiceImpl()
         )
-        worker = ProductWorker(consumer)
-        worker.run()
+        # worker = ProductWorker(consumer)
+        # worker.run()
+        while True:
+            try:
+                self.stdout.write("Started Consumer Thread")
+                consumer.run()
+            except KeyboardInterrupt:
+                consumer.stop()
+                break
 
-        self.stdout.write("Started Consumer Thread")
