@@ -25,6 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/p
 # for dev container
 sys.path.append("/lib/python")
 
+
 def get_settings(name, default=None):
     return os.environ.get(name, default)
 
@@ -58,10 +59,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "markets",
-    "circulars",
     "accounts",
-    "ranks",
+    "markets",
+    "products",
+    "circulars",
+    "comparisons",
     "corsheaders",
     "rest_framework_simplejwt",
 ]

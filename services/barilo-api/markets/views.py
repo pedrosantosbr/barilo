@@ -1,22 +1,14 @@
 import structlog
 import googlemaps
-import pandas as pd
-from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import ValidationError
-from rest_framework import generics, status
-from django.db import transaction
-from datetime import datetime as dt, UTC
-from django.utils.timezone import now
-from django.db.models import Prefetch
+from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from core.authentication import JWTAuthentication
 from typing import cast, TypedDict
 from django.conf import settings
 from django.contrib.gis.geos import Point
-from django.contrib.gis.db.models.functions import Distance
 
 from markets.serializers import (
     MarketSerializer,
@@ -27,7 +19,6 @@ from markets.serializers import (
 from markets.models import (
     Market,
     Location,
-    Product,
 )
 
 
@@ -38,7 +29,9 @@ class MarketViewSet(ModelViewSet):
     queryset = Market.objects.all()
     serializer_class = MarketSerializer
 
+
 # -
+
 
 class AdminMarketViewSet(ModelViewSet):
     queryset = Market.objects.all()

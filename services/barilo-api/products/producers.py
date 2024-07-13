@@ -4,7 +4,8 @@ import time
 import structlog
 
 from django.conf import settings
-from barilo.schemas.events import ProductEvent
+from barilo.schemas.events import ProductCreatedEvent
+from products.models import Product
 
 EXCHANGE = "products_exchange"
 
@@ -43,16 +44,30 @@ class ProductCreatedProducer:
             logger.error("Error connecting to RabbitMQ", error=e)
             return False
 
-    def publish(self, body: ProductEvent):
+    def publish(self, body: ProductCreatedEvent):
         # properties = pika.BasicProperties(method)
 
         try:
             self.channel.basic_publish(
                 exchange=EXCHANGE,
                 routing_key="product.uploaded.key",
-                body=json.dumps(body.to_dict()),
+                body=json.dumps(body),
                 # properties=properties,
             )
         except Exception as e:
             logger.error("Error publishing message", error=e)
             raise Exception("Error publishing ProductCreated") from e
+
+
+def send_product_created(product: Product):
+    producer = ProductCreatedProducer()
+    event = ProductCreatedEvent(
+        id=str(product.id),
+        name=product.name,
+        brand=product.brand,
+        weight=product.weight,
+        price=product.price,
+        market={"id": str(product.market.id), "name": product.market.name},
+    )
+    producer.publish(event)
+    logger.info("Product created event sent")

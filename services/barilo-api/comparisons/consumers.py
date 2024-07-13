@@ -2,21 +2,15 @@ import json
 from pika.exchange_type import ExchangeType
 
 from rabbitmq.consumer import BaseConsumer
-from abc import ABC, abstractmethod
-from barilo.schemas.events import ProductEvent   
+from barilo.schemas.events import ProductCreatedEvent
+from comparisons.services import SearchService
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
 
-class SearchService(ABC):
-    @abstractmethod
-    def update_products_catalog(self, params):
-        pass
-
-
-class SearchConsumer(BaseConsumer):
+class RabbitMQSearchConsumer(BaseConsumer):
     svc: SearchService
 
     EXCHANGE = "products_exchange"
@@ -36,16 +30,16 @@ class SearchConsumer(BaseConsumer):
 
         if topic == "product.uploaded.key":
             try:
-                params = ProductEvent(**message)
+                params = ProductCreatedEvent(**message)
             except Exception as e:
                 logger.info(
-                    "👾 [x] Message does not match ProductEvent schema: %s",
+                    "👾 [x] Message does not match ProductCreatedEvent schema: %s",
                     e=e,
                 )
                 raise e
 
             try:
-                self.svc.update_product_price_rank(params)
+                self.svc.update_products_catalog(params)
             except Exception as e:
                 logger.info(
                     "👾 [x] Error updating circular product price rank: %s", e=e

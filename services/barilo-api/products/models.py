@@ -1,5 +1,6 @@
 import ulid
-from django.contrib.gis.db import models
+from django.db import models
+from markets.models import Market
 
 
 class BaseModel(models.Model):
@@ -16,19 +17,18 @@ class BaseModel(models.Model):
         super().save(*args, **kwargs)
 
 
-class Market(BaseModel):
-    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
+class Product(BaseModel):
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+
     name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=11)
-    cnpj = models.CharField(max_length=14)
-    email = models.EmailField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    weight = models.CharField(max_length=100)
+    brand = models.CharField(max_length=100, blank=True, null=True)
+    _v = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
 
-
-class Location(BaseModel):
-    market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    address = models.CharField(max_length=500)
-    cep = models.CharField(max_length=8)
-    geolocation = models.PointField(srid=4326)
+    def save(self, *args, **kwargs):
+        self._v += 1
+        return super().save(*args, **kwargs)

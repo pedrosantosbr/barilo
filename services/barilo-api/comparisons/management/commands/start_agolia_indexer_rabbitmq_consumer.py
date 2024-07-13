@@ -17,24 +17,22 @@
 #     Easier to pass arguments and options to the command using Django's built-in command argument parsing.
 
 from django.core.management.base import BaseCommand
-from markets.consumers import SearchConsumer, SearchService
+from django.conf import settings
+from comparisons.services import AgoliaSearchService
+from comparisons.consumers import RabbitMQSearchConsumer
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
 
-class ProductServiceImpl(SearchService):
-    def update_products_catalog(self, params):
-        logger.info("👾 [x] fetching agolia...", params=params)
-
-
 class Command(BaseCommand):
-    help = "Launches Listener for user_created message : RaabitMQ"
+    help = "Starts the RabbitMQ Consumer for Agolia Indexer"
 
     def handle(self, *args, **options):
-        consumer = SearchConsumer(
-            "amqp://barilo:barilo@barilo-rabbitmq:5672/%2F", ProductServiceImpl()
+        consumer = RabbitMQSearchConsumer(
+            f"amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}:5672/%2F",
+            AgoliaSearchService(),
         )
         # worker = ProductWorker(consumer)
         # worker.run()
@@ -45,4 +43,3 @@ class Command(BaseCommand):
             except KeyboardInterrupt:
                 consumer.stop()
                 break
-

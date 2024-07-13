@@ -58,7 +58,7 @@ RUN ln -s /src/static /static
 
 COPY ./services/barilo-api/pyproject.toml ./services/barilo-api/poetry.lock /src/
 
-ENTRYPOINT ["./docker-entry.sh", "runconsumer"]
+ENTRYPOINT ["./docker-entry.sh", "start_agolia_indexer_rabbitmq_consumer"]
 
 COPY ./services/barilo-api .
 COPY lib/python /lib/python
