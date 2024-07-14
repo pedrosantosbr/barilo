@@ -19,7 +19,7 @@ RUN mkdir --mode=777 ${PROMETHEUS_MULTIPROC_DIR}
 RUN pip install "poetry==${POETRY_VERSION}"
 
 RUN apt-get update && \
-    apt-get install -y binutils libproj-dev gdal-bin cmake wget build-essential
+    apt-get install -y binutils libproj-dev gdal-bin cmake wget build-essential htop
 
 # ENV GEO_VERSION=3.12.2
 

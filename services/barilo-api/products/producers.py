@@ -59,15 +59,23 @@ class ProductCreatedProducer:
             raise Exception("Error publishing ProductCreated") from e
 
 
-def send_product_created(product: Product):
+def send_product_created(
+    id: str,
+    name: str,
+    brand: str,
+    weight: str,
+    price: float,
+    market_id: str,
+    market_address: str,
+):
     producer = ProductCreatedProducer()
     event = ProductCreatedEvent(
-        id=str(product.id),
-        name=product.name,
-        brand=product.brand,
-        weight=product.weight,
-        price=product.price,
-        market={"id": str(product.market.id), "name": product.market.name},
+        id=id,
+        name=name,
+        brand=brand,
+        weight=weight,
+        price=price,
+        market={"id": market_id, "address": market_address},
     )
     producer.publish(event)
-    logger.info("Product created event sent")
+    logger.info("Product created event sent", product_name=name, brand=brand)

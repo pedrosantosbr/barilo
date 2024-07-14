@@ -32,3 +32,6 @@ class Location(BaseModel):
     address = models.CharField(max_length=500)
     cep = models.CharField(max_length=8)
     geolocation = models.PointField(srid=4326)
+
+    def __str__(self):
+        return self.cep

@@ -247,3 +247,6 @@ LOGGING = {
     },
     "loggers": {"root": {"handlers": ["console"], "level": "INFO", "propagate": False}},
 }
+
+AGOLIA_APP_ID = os.getenv("AGOLIA_APP_ID", "app_id")
+AGOLIA_ADMIN_API_KEY = os.getenv("AGOLIA_ADMIN_API_KEY", "admin_api_key")

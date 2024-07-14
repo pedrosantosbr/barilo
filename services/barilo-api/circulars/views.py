@@ -61,6 +61,7 @@ def upload_circular(request):
         expiration_date=serializer.validated_data["expiration_date"],
     )
 
+    products = []
     with transaction.atomic():
         # check if products already exist
         for _, row in df.iterrows():
@@ -68,26 +69,30 @@ def upload_circular(request):
             product_name = row["name"].lower()
 
             try:
-                product_price = int(row["price"])
+                product_price = float(row["price"])
             except ValueError:
                 raise ValidationError({"message": f"Invalid price for {product_name}"})
 
-            product = Product.objects.filter(
+            product_qs = Product.objects.filter(
+                location=location,
                 name=product_name,
                 brand=row["brand"],
-                market=location.market,
                 weight=row["weight"],
-            ).first()
+            )
+            logger.info("Product found", product_qs=product_qs)
 
-            if not product:
+            if product_qs.count() == 0:
                 product = Product.objects.create(
                     name=product_name,
                     price=product_price,
                     weight=row["weight"],
                     brand=row["brand"],
                     market=location.market,
+                    location=location,
                 )
-                transaction.on_commit(lambda: send_product_created(product))
+                products.append(product)
+            else:
+                product = product_qs.first()
 
             # -
 
@@ -108,6 +113,17 @@ def upload_circular(request):
                     product=product,
                     discount_price=product_price,
                 )
+
+    for product in products:
+        send_product_created(
+            id=str(product.id),
+            name=product.name,
+            brand=product.brand,
+            weight=product.weight,
+            price=product.price,
+            market_id=str(product.market.id),
+            market_address=str(product.location.id),
+        )
 
     return Response({"message": "Circular uploaded successfully."})
 

@@ -15,11 +15,12 @@
 
 # Configuration Management:
 #     Easier to pass arguments and options to the command using Django's built-in command argument parsing.
-
+from multiprocessing import Process
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from comparisons.services import AgoliaSearchService
 from comparisons.consumers import RabbitMQSearchConsumer
+
 
 import structlog
 
@@ -36,10 +37,16 @@ class Command(BaseCommand):
         )
         # worker = ProductWorker(consumer)
         # worker.run()
-        while True:
-            try:
-                self.stdout.write("Started Consumer Thread")
-                consumer.run()
-            except KeyboardInterrupt:
-                consumer.stop()
-                break
+        # while True:
+        #     try:
+        #         self.stdout.write("Started Consumer Thread")
+        #         consumer.run()
+        #     except KeyboardInterrupt:
+        #         consumer.stop()
+        #         break
+
+        for i in range(5):
+            p = Process(target=consumer.run)
+            p.start()
+            p.join()
+            logger.info("Consumer Process Started", process_id=p.pid)

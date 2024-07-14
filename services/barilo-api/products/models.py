@@ -1,6 +1,5 @@
 import ulid
 from django.db import models
-from markets.models import Market
 
 
 class BaseModel(models.Model):
@@ -18,7 +17,8 @@ class BaseModel(models.Model):
 
 
 class Product(BaseModel):
-    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+    market = models.ForeignKey("markets.Market", on_delete=models.CASCADE)
+    location = models.ForeignKey("markets.Location", on_delete=models.CASCADE)
 
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)

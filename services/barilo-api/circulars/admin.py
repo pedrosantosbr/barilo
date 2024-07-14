@@ -1,3 +1,5 @@
 from django.contrib import admin
+from circulars.models import Circular, CircularProduct
 
-# Register your models here.
+admin.site.register(Circular)
+admin.site.register(CircularProduct)
