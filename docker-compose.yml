@@ -16,12 +16,17 @@ services:
     env_file:
       - ./services/barilo-api/.env
 
-  barilo-consumer-api:
-    container_name: barilo-consumer-api
+  barilo-agolia-indexer-rabbitmq-consumer:
+    container_name: barilo-agolia-indexer-rabbitmq-consumer
     build:
       context: .
-      dockerfile: ./services/barilo-api/build/rabbitmq-consumer/Dockerfile
+      dockerfile: ./services/barilo-api/build/agolia-indexer-rabbitmq-consumer/Dockerfile
       target: local
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 300M
     depends_on:
       - postgres
       - redis
