@@ -1,11 +1,18 @@
 from django.contrib import admin
-from comparisons.models import ProductIndex
+from comparisons.models import ProductBucket, ProductBucketItem
 
 
-class ProductIndexAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "weight", "brand", "address", "market_id")
-    search_fields = ("name", "brand")
-    list_filter = ("address", "brand")
+class ProductBucketAdmin(admin.ModelAdmin):
+    list_display = ["id", "name"]
 
 
-admin.site.register(ProductIndex, ProductIndexAdmin)
+class ProductBucketItemAdmin(admin.ModelAdmin):
+    list_display = ["id", "bucket", "product_metadata"]
+
+    # custom product name
+    def product_metadata(self, obj):
+        return obj.product.name + " - " + obj.product.location.cep
+
+
+admin.site.register(ProductBucket, ProductBucketAdmin)
+admin.site.register(ProductBucketItem, ProductBucketItemAdmin)

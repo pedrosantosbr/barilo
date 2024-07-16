@@ -18,7 +18,7 @@
 from multiprocessing import Process
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from comparisons.consumers import AgoliaSearchRabbitMQConsumer
+from comparisons.consumers import PostgresqlBucketRabbitMQConsumer
 
 
 import structlog
@@ -27,10 +27,10 @@ logger = structlog.get_logger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Starts the RabbitMQ Consumer for Agolia Indexer"
+    help = "Starts PostgresqlBucketRabbitMQConsumer consumer"
 
     def handle(self, *args, **options):
-        consumer = AgoliaSearchRabbitMQConsumer(
+        consumer = PostgresqlBucketRabbitMQConsumer(
             f"amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}:5672/%2F",
         )
 

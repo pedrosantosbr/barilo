@@ -36,6 +36,26 @@ services:
     env_file:
       - ./services/barilo-api/.env
 
+  barilo-postgresql-comparison-rabbitmq-consumer:
+    container_name: postgresql-comparison-rabbitmq-consumer
+    build:
+      context: .
+      dockerfile: ./services/barilo-api/build/postgresql-comparison-rabbitmq-consumer/Dockerfile
+      target: local
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 300M
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./services/barilo-api:/src
+    env_file:
+      - ./services/barilo-api/.env
+
   # barilo-grpc-api:
   #   container_name: barilo-grpc-api
   #   build:
