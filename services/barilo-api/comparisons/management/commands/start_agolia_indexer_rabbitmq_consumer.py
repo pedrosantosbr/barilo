@@ -18,7 +18,6 @@
 from multiprocessing import Process
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from comparisons.services import AgoliaSearchService
 from comparisons.consumers import RabbitMQSearchConsumer
 
 
@@ -33,7 +32,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         consumer = RabbitMQSearchConsumer(
             f"amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}:5672/%2F",
-            AgoliaSearchService(),
         )
         # worker = ProductWorker(consumer)
         # worker.run()

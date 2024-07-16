@@ -6,6 +6,7 @@ class ProductCreatedEvent(TypedDict):
         id: str
         address: str
 
+    id: str
     market: Market
     name: str
     price: float

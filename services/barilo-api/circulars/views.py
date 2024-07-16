@@ -82,11 +82,16 @@ def upload_circular(request):
             logger.info("Product found", product_qs=product_qs)
 
             if product_qs.count() == 0:
+                logger.info(
+                    "Creating product",
+                    brand=row["brand"],
+                    brand_type=type(row["brand"]),
+                )
                 product = Product.objects.create(
                     name=product_name,
                     price=product_price,
                     weight=row["weight"],
-                    brand=row["brand"],
+                    brand=row["brand"] if not pd.isna(row["brand"]) else None,
                     market=location.market,
                     location=location,
                 )

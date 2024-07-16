@@ -5,7 +5,6 @@ import structlog
 
 from django.conf import settings
 from barilo.schemas.events import ProductCreatedEvent
-from products.models import Product
 
 EXCHANGE = "products_exchange"
 
@@ -72,8 +71,8 @@ def send_product_created(
     event = ProductCreatedEvent(
         id=id,
         name=name,
-        brand=brand,
         weight=weight,
+        brand=brand,
         price=price,
         market={"id": market_id, "address": market_address},
     )

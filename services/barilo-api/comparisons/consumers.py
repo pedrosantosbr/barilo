@@ -8,10 +8,19 @@ from pika.exchange_type import ExchangeType
 from rabbitmq.consumer import BlockingBaseConsumer
 from barilo.schemas.events import ProductCreatedEvent
 from comparisons.services import SearchService
+from barilo.agolia.product import Product as AgoliaProduct
 
 import structlog
 
 logger = structlog.get_logger(__name__)
+
+
+class SearchException(Exception):
+    message: str
+
+    def __init__(self, message: str, *args: object) -> None:
+        super().__init__(*args)
+        self.message = message
 
 
 class RabbitMQSearchConsumer(BlockingBaseConsumer):
@@ -24,9 +33,8 @@ class RabbitMQSearchConsumer(BlockingBaseConsumer):
 
     _id: str
 
-    def __init__(self, amqp_url, svc: SearchService):
+    def __init__(self, amqp_url):
         super().__init__(amqp_url)
-        self.svc = svc
         self._id = str(uuid.uuid4())
 
     def consume_message(self, topic: str, body: bytes):
@@ -39,18 +47,50 @@ class RabbitMQSearchConsumer(BlockingBaseConsumer):
         if topic == "product.uploaded.key":
             params = ProductCreatedEvent(**message)
 
-            product_index_name = (
-                f"{params.get('brand', '')} {params['name']} {params['weight']}"
-            ).strip()
+            logger.info("👾 [x] Processing message:", _id=self._id, params=params)
+
+            if params["brand"] is not None:
+                product_index_name = (
+                    f"{params.get('brand', '')} {params['name']} {params['weight']}"
+                ).strip()
+            else:
+                product_index_name = f"{params['name']} {params['weight']}"
 
             with transaction.atomic():
-                market = Market.objects.get(id=params["market"]["id"])
-                ProductIndex.objects.create(
-                    name=product_index_name,
-                    price=params["price"],
-                    weight=params["weight"],
-                    brand=params.get("brand", None),
-                    address=params["market"]["address"],
-                    market=market,
-                )
-                self.svc.update_products_catalog(params)
+                # try:
+                #     mid = params["market"]["id"]
+                #     market = Market.objects.get(id=mid)
+                # except Market.DoesNotExist as e:
+                #     logger.error(f"Market not found with id: {mid}")
+                #     raise SearchException(f"Market not found for id {mid}") from e
+
+                # try:
+                #     product_idx = ProductIndex.objects.create(
+                #         name=product_index_name,
+                #         price=params["price"],
+                #         weight=params["weight"],
+                #         brand=params.get("brand", None),
+                #         address=params["market"]["address"],
+                #         market=market,
+                #     )
+                # except Exception as e:
+                #     logger.error(f"Failed to create product index {product_index_name}")
+                #     raise SearchException(
+                #         f"Failed to create {product_index_name} on postgresql"
+                #     ) from e
+
+                try:
+                    agl_product = AgoliaProduct()
+                    agl_product.create(
+                        name=product_index_name,
+                        weight=params["weight"],
+                        brand=params.get("brand", None),
+                        objectID=params["id"],
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Failed to save {product_index_name} on Agolia", msg=str(e)
+                    )
+                    raise SearchException(
+                        f"Failed to save {product_index_name} index on Agolia"
+                    ) from e
