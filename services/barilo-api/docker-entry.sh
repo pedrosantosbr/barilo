@@ -17,8 +17,12 @@ function main() (
       run_setup
       ;;
 
-    "runconsumer")
-      python3 manage.py start_rabbitmq_consumer
+    "start_agolia_indexer_rabbitmq_consumer")
+      python3 manage.py start_agolia_indexer_rabbitmq_consumer
+      ;;
+    
+    "start_postgresql_comparison_rabbitmq_consumer")
+      python3 manage.py start_postgresql_comparison_rabbitmq_consumer
       ;;
     
     "") ;;

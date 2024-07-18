@@ -20,7 +20,10 @@ import dotenv
 
 dotenv.load_dotenv()
 
+# for local machine
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python"))
+# for dev container
+sys.path.append("/lib/python")
 
 
 def get_settings(name, default=None):
@@ -56,16 +59,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "markets",
-    "circulars",
+    "django_filters",
     "accounts",
-    "ranks",
+    "markets",
+    "products",
+    "circulars",
+    "comparisons",
     "corsheaders",
     "rest_framework_simplejwt",
+    "django.contrib.postgres",
 ]
 
 REST_FRAMEWORK = {
     # "DEFAULT_AUTHENTICATION_CLASSES": ("core.authentication.JWTAuthentication",)
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"]
 }
 
 SIMPLE_JWT = {
@@ -225,6 +232,37 @@ structlog.configure(
     cache_logger_on_first_use=False,
 )
 
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "json_formatter": {
+#             "()": structlog.stdlib.ProcessorFormatter,
+#             "processor": structlog.processors.JSONRenderer(),
+#         }
+#     },
+#     "handlers": {
+#         "console": {
+#             "level": "INFO",
+#             "class": "logging.StreamHandler",
+#             "formatter": "json_formatter",
+#         }
+#     },
+#     "loggers": {
+#         "root": {
+#             "handlers": ["console"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "django.db.backends": {
+#             "handlers": ["console"],
+#             "level": "DEBUG",
+#             "propagate": False,
+#         },
+#     },
+# }
+
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -236,10 +274,29 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "json_formatter",
-        }
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "django_queries.log",  # Choose a file name and path
+        },
     },
-    "loggers": {"root": {"handlers": ["console"], "level": "INFO", "propagate": False}},
+    "loggers": {
+        "root": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
 }
+
+
+AGOLIA_APP_ID = os.getenv("AGOLIA_APP_ID", "app_id")
+AGOLIA_ADMIN_API_KEY = os.getenv("AGOLIA_ADMIN_API_KEY", "admin_api_key")

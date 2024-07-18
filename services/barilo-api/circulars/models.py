@@ -1,7 +1,7 @@
 import ulid
 from django.db import models
-from markets.models import Location, Product
-
+from markets.models import Location
+from products.models import Product
 
 
 class BaseModel(models.Model):
@@ -16,6 +16,7 @@ class BaseModel(models.Model):
         if not self.id:
             self.id = ulid.new()
         super().save(*args, **kwargs)
+
 
 class Circular(BaseModel):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)

@@ -21,27 +21,9 @@ RUN pip install "poetry==${POETRY_VERSION}"
 RUN apt-get update && \
     apt-get install -y binutils libproj-dev gdal-bin cmake wget build-essential
 
-# ENV GEO_VERSION=3.12.2
-
-# RUN apt-get update && \
-#     apt-get install -y binutils libproj-dev gdal-bin cmake wget build-essential
-
-# # Download and extract GEOS
-# RUN wget https://download.osgeo.org/geos/geos-${GEO_VERSION}.tar.bz2 && \
-#     tar xjf geos-${GEO_VERSION}.tar.bz2
-
-# # Build and install GEOS
-# RUN cd geos-${GEO_VERSION} && \
-#     mkdir build && cd build && \
-#     cmake -DCMAKE_BUILD_TYPE=Release .. && \
-#     cmake --build . && \
-#     cmake --build . --target install
-
-# RUN ldconfig
-  
-
 # -------------------------------------------------------------------------------
 # Used for development in docker-compose
+
 FROM base as local
 
 WORKDIR /src/
@@ -58,9 +40,11 @@ RUN ln -s /src/static /static
 
 COPY ./services/barilo-api/pyproject.toml ./services/barilo-api/poetry.lock /src/
 
+
 ENTRYPOINT ["./docker-entry.sh", "runsetup"]
 
 COPY ./services/barilo-api .
+COPY lib/python /lib/python
 
 RUN chmod +x ./docker-entry.sh
 

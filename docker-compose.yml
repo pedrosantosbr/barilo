@@ -16,12 +16,17 @@ services:
     env_file:
       - ./services/barilo-api/.env
 
-  barilo-consumer-api:
-    container_name: barilo-consumer-api
+  barilo-agolia-indexer-rabbitmq-consumer:
+    container_name: barilo-agolia-indexer-rabbitmq-consumer
     build:
       context: .
-      dockerfile: ./services/barilo-api/build/rabbitmq-consumer/Dockerfile
+      dockerfile: ./services/barilo-api/build/agolia-indexer-rabbitmq-consumer/Dockerfile
       target: local
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 300M
     depends_on:
       - postgres
       - redis
@@ -31,14 +36,18 @@ services:
     env_file:
       - ./services/barilo-api/.env
 
-  barilo-grpc-api:
-    container_name: barilo-grpc-api
+  barilo-postgresql-comparison-rabbitmq-consumer:
+    container_name: postgresql-comparison-rabbitmq-consumer
     build:
       context: .
-      dockerfile: ./services/barilo-api/build/grpc-server/Dockerfile
+      dockerfile: ./services/barilo-api/build/postgresql-comparison-rabbitmq-consumer/Dockerfile
       target: local
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 300M
     depends_on:
-      - barilo-rest-api
       - postgres
       - redis
       - rabbitmq
@@ -46,6 +55,22 @@ services:
       - ./services/barilo-api:/src
     env_file:
       - ./services/barilo-api/.env
+
+  # barilo-grpc-api:
+  #   container_name: barilo-grpc-api
+  #   build:
+  #     context: .
+  #     dockerfile: ./services/barilo-api/build/grpc-server/Dockerfile
+  #     target: local
+  #   depends_on:
+  #     - barilo-rest-api
+  #     - postgres
+  #     - redis
+  #     - rabbitmq
+  #   volumes:
+  #     - ./services/barilo-api:/src
+  #   env_file:
+  #     - ./services/barilo-api/.env
 
   barilo-web:
     container_name: barilo-web

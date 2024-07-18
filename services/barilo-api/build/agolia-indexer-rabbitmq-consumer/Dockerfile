@@ -19,7 +19,7 @@ RUN mkdir --mode=777 ${PROMETHEUS_MULTIPROC_DIR}
 RUN pip install "poetry==${POETRY_VERSION}"
 
 RUN apt-get update && \
-    apt-get install -y binutils libproj-dev gdal-bin cmake wget build-essential
+    apt-get install -y binutils libproj-dev gdal-bin cmake wget build-essential htop
 
 # ENV GEO_VERSION=3.12.2
 
@@ -58,7 +58,7 @@ RUN ln -s /src/static /static
 
 COPY ./services/barilo-api/pyproject.toml ./services/barilo-api/poetry.lock /src/
 
-ENTRYPOINT ["./docker-entry.sh", "rungrpc"]
+ENTRYPOINT ["./docker-entry.sh", "start_agolia_indexer_rabbitmq_consumer"]
 
 COPY ./services/barilo-api .
 COPY lib/python /lib/python

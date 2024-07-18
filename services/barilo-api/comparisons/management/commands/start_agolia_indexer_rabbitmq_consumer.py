@@ -15,29 +15,27 @@
 
 # Configuration Management:
 #     Easier to pass arguments and options to the command using Django's built-in command argument parsing.
-
+from multiprocessing import Process
 from django.core.management.base import BaseCommand
-from markets.consumers import ProductConsumer, ProductService
-from markets.workers import ProductWorker
+from django.conf import settings
+from comparisons.consumers import AgoliaSearchRabbitMQConsumer
+
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
 
-class ProductServiceImpl(ProductService):
-    def update_product_price_rank(self, params):
-        logger.info("👾 [x] Updating product price rank: %s", params)
-
-
 class Command(BaseCommand):
-    help = "Launches Listener for user_created message : RaabitMQ"
+    help = "Starts the RabbitMQ Consumer for Agolia Indexer"
 
     def handle(self, *args, **options):
-        consumer = ProductConsumer(
-            "amqp://barilo:barilo@barilo-rabbitmq:5672/%2F", ProductServiceImpl()
+        consumer = AgoliaSearchRabbitMQConsumer(
+            f"amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}:5672/%2F",
         )
-        worker = ProductWorker(consumer)
-        worker.run()
 
-        self.stdout.write("Started Consumer Thread")
+        for i in range(5):
+            p = Process(target=consumer.run)
+            p.start()
+            p.join()
+            logger.info("Consumer Process Started", process_id=p.pid)

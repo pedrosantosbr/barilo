@@ -5,14 +5,24 @@ from datetime import datetime as dt, UTC
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.exceptions import ValidationError
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.db.models import Prefetch
-from markets.models import Location, Product
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
+from markets.models import Location
+from products.models import Product
 from circulars.models import CircularProduct, Circular
-from circulars.serializers import (UploadCircularSerializer, RankCircularProductListSerializer, CircularSerializer, CircularProductSerializer,SearchCircularSerializer,)
-from circulars.producers import CircularProductCreatedProducer, CircularProductCreated
+from circulars.serializers import (
+    UploadCircularSerializer,
+    RankCircularProductListSerializer,
+    CircularSerializer,
+    CircularProductSerializer,
+    SearchCircularSerializer,
+)
+from products.producers import send_product_created
 
 
 import structlog
@@ -20,13 +30,8 @@ import structlog
 logger = structlog.get_logger(__name__)
 
 
-def get_producer():
-    return CircularProductCreatedProducer()
-
-
 # Create your views here.
 @api_view(["POST"])
-@transaction.atomic
 def upload_circular(request):
     serializer = UploadCircularSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -41,7 +46,7 @@ def upload_circular(request):
         "weight": str,
         "brand": str,
     }
-    
+
     try:
         df = pd.read_csv(file, dtype=dtype_spec)
     except Exception as e:
@@ -56,69 +61,73 @@ def upload_circular(request):
         expiration_date=serializer.validated_data["expiration_date"],
     )
 
-    # check if products already exist
-    for _, row in df.iterrows():
-        logger.info("Processing row", row=row)
-        product_name = row["name"].lower()
+    products = []
+    with transaction.atomic():
+        # check if products already exist
+        for _, row in df.iterrows():
+            logger.info("Processing row", row=row)
+            product_name = row["name"].lower()
 
-        try:
-            product_price = int(row["price"])
-        except ValueError:
-            return Response(
-                {"message": f"Price {row['price']} is not a valid number."}, status=400
-            )
+            try:
+                product_price = float(row["price"])
+            except ValueError:
+                raise ValidationError({"message": f"Invalid price for {product_name}"})
 
-        product = Product.objects.filter(
-            name=product_name,
-            brand=row["brand"],
-            market=location.market,
-            weight=row["weight"],
-        ).first()
-
-        if not product:
-            product = Product.objects.create(
+            product_qs = Product.objects.filter(
+                location=location,
                 name=product_name,
-                price=product_price,
-                weight=row["weight"],
                 brand=row["brand"],
-                market=location.market,
+                weight=row["weight"],
+            )
+            logger.info("Product found", product_qs=product_qs)
+
+            if product_qs.count() == 0:
+                logger.info(
+                    "Creating product",
+                    brand=row["brand"],
+                    brand_type=type(row["brand"]),
+                )
+                product = Product.objects.create(
+                    name=product_name,
+                    price=product_price,
+                    weight=row["weight"],
+                    brand=row["brand"] if not pd.isna(row["brand"]) else None,
+                    market=location.market,
+                    location=location,
+                )
+                products.append(product)
+            else:
+                product = product_qs.first()
+
+            # -
+
+            circularproduct = (
+                CircularProduct.objects.filter(
+                    description=product_name,
+                    product=product,
+                    circular__expiration_date__gt=dt.now(UTC).strftime("%Y-%m-%d"),
+                )
+                .select_related("circular")
+                .first()
             )
 
-        circularproduct = (
-            CircularProduct.objects.filter(
-                description=product_name,
-                product=product,
-                circular__expiration_date__gt=dt.now(UTC).strftime("%Y-%m-%d"),
-            )
-            .select_related("circular")
-            .first()
-        )
+            if not circularproduct:
+                circularproduct = CircularProduct.objects.create(
+                    description=f"{product.brand} {product.name} {product.weight}".strip(),
+                    circular=circular,
+                    product=product,
+                    discount_price=product_price,
+                )
 
-        if circularproduct:
-            return Response(
-                {
-                    "message": f"Product {product.name} already exists in a circular that expires on {circularproduct.circular.expiration_date}."
-                },
-                status=400,
-            )
-
-        circularproduct = CircularProduct.objects.create(
-            description=product_name,
-            circular=circular,
-            product=product,
-            discount_price=product_price,
-        )
-
-        # xxx: This is the part that sends the message to RabbitMQ
-        # Lazy initialize and send the message to RabbitMQ
-        producer = get_producer()
-        producer.publish(
-            body=CircularProductCreated(
-                id=circularproduct.id,
-                description=circularproduct.description,
-                product_weight=product.weight,
-                product_brand=product.brand,
-            )
+    for product in products:
+        send_product_created(
+            id=str(product.id),
+            name=product.name,
+            brand=product.brand,
+            weight=product.weight,
+            price=product.price,
+            market_id=str(product.market.id),
+            market_address=str(product.location.id),
         )
 
     return Response({"message": "Circular uploaded successfully."})
@@ -167,7 +176,7 @@ class RankCircularProductListView(generics.ListAPIView):
         queryset = queryset.order_by("name", "circularproduct_set__discount_price")
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    
+
 
 class SearchCircularListView(generics.ListAPIView):
     serializer_class = SearchCircularSerializer

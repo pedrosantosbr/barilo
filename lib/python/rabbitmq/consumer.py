@@ -13,7 +13,7 @@ from pika.exchange_type import ExchangeType
 
 LOGGER = logging.getLogger(__name__)
 
-logger = structlog.get_logger(__name__)
+logger = structlog.wrap_logger(LOGGER)
 
 
 class BaseConsumer(ABC):
@@ -30,10 +30,10 @@ class BaseConsumer(ABC):
 
     """
 
-    EXCHANGE = "circularproduct_exchange"
+    EXCHANGE = ""
     EXCHANGE_TYPE = ExchangeType.topic
-    QUEUE = "circularproduct_queue"
-    ROUTING_KEY = "circularproduct.*.key"
+    QUEUE = ""
+    ROUTING_KEY = ""
 
     def __init__(self, amqp_url):
         """Create a new instance of the consumer class, passing in the AMQP
@@ -42,6 +42,15 @@ class BaseConsumer(ABC):
         :param str amqp_url: The AMQP url to connect with
 
         """
+        if not self.EXCHANGE:
+            raise ValueError("EXCHANGE must be defined")
+
+        if not self.QUEUE:
+            raise ValueError("QUEUE must be defined")
+
+        if not self.ROUTING_KEY:
+            raise ValueError("ROUTING_KEY must be defined")
+
         self.should_reconnect = False
         self.was_consuming = False
 
@@ -425,6 +434,72 @@ class BaseConsumer(ABC):
             else:
                 self._connection.ioloop.stop()
             LOGGER.info("Stopped")
+
+    @abstractmethod
+    def consume_message(self, topic, body):
+        pass
+
+
+class BlockingBaseConsumer(ABC):
+    EXCHANGE = ""
+    QUEUE = ""
+    ROUTING_KEY = ""
+
+    def __init__(self, amqp_url: str) -> None:
+        self._connection = None
+        self._channel = None
+        self._url = amqp_url
+
+    def connect(self):
+        self._connection = pika.BlockingConnection(pika.URLParameters(self._url))
+        self._channel = self._connection.channel()
+        self._channel.exchange_declare(
+            exchange=self.EXCHANGE,
+            exchange_type=ExchangeType.topic,
+            passive=False,
+            durable=True,
+            auto_delete=False,
+        )
+        self._channel.queue_declare(
+            queue=self.QUEUE,
+            auto_delete=True,
+            exclusive=False,
+        )
+        self._channel.queue_bind(
+            queue=self.QUEUE, exchange=self.EXCHANGE, routing_key=self.ROUTING_KEY
+        )
+        self._channel.basic_qos(prefetch_count=1)
+
+    def start_consuming(self):
+        self._channel.basic_consume(self.QUEUE, self.on_message, auto_ack=False)
+        self._channel.start_consuming()
+
+    def reject_message(self, delivery_tag):
+        self._channel.basic_reject(delivery_tag, requeue=False)
+
+    def acknowledge_message(self, delivery_tag):
+        self._channel.basic_ack(delivery_tag)
+
+    def run(self):
+        # on_message_callback = functools.partial(
+        #     self.on_message, userdata="on_message_userdata"
+        # )
+
+        self.connect()
+        try:
+            self.start_consuming()
+        except KeyboardInterrupt:
+            LOGGER.info("Stopping consumer")
+            self._channel.stop_consuming()
+            self._connection.close()
+
+    def on_message(self, chan, method_frame, header_frame, body, userdata=None):
+        try:
+            self.consume_message(method_frame.routing_key, body)
+            self.acknowledge_message(method_frame.delivery_tag)
+        except Exception as e:
+            LOGGER.error("Error consuming message: %s", e)
+            self.reject_message(method_frame.delivery_tag)
 
     @abstractmethod
     def consume_message(self, topic, body):

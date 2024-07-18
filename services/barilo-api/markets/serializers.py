@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from markets.models import (
     Market,
-    Product,
     Location,
 )
 
@@ -9,12 +8,6 @@ from markets.models import (
 class MarketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Market
-        fields = "__all__"
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
         fields = "__all__"
 
 
@@ -31,6 +24,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
     def get_lat(self, obj):
         return obj.geolocation.y
+
 
 class AdminMarketSerializer(serializers.ModelSerializer):
     class Meta:
