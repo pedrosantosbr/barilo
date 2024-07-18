@@ -1,5 +1,5 @@
 from django.urls import path
-from comparisons.views import ProcuctBucketViewSet
+from comparisons.views import SearchProcuctBucketListView
 
 app_name = "comparisons"
 
@@ -7,7 +7,7 @@ urlpatterns = [
     # public resources
     path(
         "comparison/",
-        ProcuctBucketViewSet.as_view({"get": "list"}),
+        SearchProcuctBucketListView.as_view(),
         name="productbucket-list",
     ),
 ]

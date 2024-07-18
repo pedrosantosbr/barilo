@@ -1,8 +1,8 @@
-from rest_framework import viewsets
+from rest_framework import filters
 
 from comparisons.models import ProductBucket, ProductBucketItem
 from products.models import Product
-from rest_framework import serializers
+from rest_framework import serializers, generics
 from django.db.models import Prefetch
 
 
@@ -28,7 +28,11 @@ class ProductBucketSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "product_bucket_items"]
 
 
-class ProcuctBucketViewSet(viewsets.ModelViewSet):
+class ProductBucketSearchFilter(filters.SearchFilter):
+    search_param = "name"
+
+
+class SearchProcuctBucketListView(generics.ListAPIView):
     queryset = ProductBucket.objects.prefetch_related(
         Prefetch(
             lookup="productbucketitem_set",
@@ -37,3 +41,5 @@ class ProcuctBucketViewSet(viewsets.ModelViewSet):
         )
     ).all()
     serializer_class = ProductBucketSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["@name"]
