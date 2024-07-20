@@ -19,8 +19,7 @@ const CircularProductSchema = z.object({
 const MarketSchema = z.object({
   id: z.string(),
   name: z.string(),
-  phone_number: z.string(),
-  email: z.string().email(),
+  address: z.string(),
 });
 
 const CircularSchema = z.object({

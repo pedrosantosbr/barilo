@@ -53,4 +53,8 @@ class AdminLocationSerializer(serializers.ModelSerializer):
             "address": instance.address,
             "cep": instance.cep,
             "market": instance.market.name,
+            "geolocation": {
+                "lat": instance.geolocation.y,
+                "lng": instance.geolocation.x,
+            },
         }

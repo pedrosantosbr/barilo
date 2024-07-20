@@ -193,11 +193,11 @@ class SearchCircularListView(generics.ListAPIView):
             .filter(expiration_date__gte=dt.now(UTC).strftime("%Y-%m-%d"))
         )
 
-        lng = self.request.query_params.get("lng")
-        lat = self.request.query_params.get("lat")
-        rad = self.request.query_params.get("rad")
+        lng = self.request.query_params.get("lng", None)
+        lat = self.request.query_params.get("lat", None)
+        rad = self.request.query_params.get("rad", None)
 
-        if not (lng and lat and rad):
+        if (lng and lat and rad) is None:
             raise ValidationError({"message": "Missing query parameters"})
 
         user_location = None
@@ -218,6 +218,7 @@ class SearchCircularListView(generics.ListAPIView):
             return queryset
 
         if user_location:
+            logger.info("Filtering by location", user_location=user_location, rad=rad)
             nearby = (
                 Location.objects.annotate(
                     distance=Distance("geolocation", user_location)

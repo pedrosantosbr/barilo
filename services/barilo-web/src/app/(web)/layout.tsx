@@ -11,12 +11,10 @@ export default function WebLayout({
 }>) {
   return (
     <div>
-      <SessionProvider>
-        <PreferencesContextProvider>
-          <Header />
-          {children}
-        </PreferencesContextProvider>
-      </SessionProvider>
+      <PreferencesContextProvider>
+        <Header />
+        {children}
+      </PreferencesContextProvider>
     </div>
   );
 }

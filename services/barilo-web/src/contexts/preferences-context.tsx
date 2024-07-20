@@ -3,6 +3,7 @@ import z from "zod";
 
 // import cookies
 import { parseCookies } from "nookies";
+import { set } from "date-fns";
 
 export const preferenceCookieSchema = z.object({
   cep: z.string().optional(),
@@ -16,8 +17,12 @@ export const preferenceCookieSchema = z.object({
 
 type AddressContext = {
   address?: string;
+  geolocation: {
+    lat: number;
+    lng: number;
+  };
   cep?: string;
-  radius?: number;
+  radius: number;
   setAddress: (address: string) => void;
   setCep: (cep: string) => void;
   setRadius: (radius: number) => void;
@@ -25,8 +30,12 @@ type AddressContext = {
 
 const initialState: AddressContext = {
   address: undefined,
+  geolocation: {
+    lat: 0,
+    lng: 0,
+  },
   cep: undefined,
-  radius: undefined,
+  radius: 20,
   setAddress: () => {},
   setCep: () => {},
   setRadius: () => {},
@@ -43,7 +52,10 @@ export const PreferencesContextProvider = ({
     initialState.address
   );
   const [cep, setCep] = useState<string | undefined>(initialState.cep);
-  const [radius, setRadius] = useState<number | undefined>(initialState.radius);
+  const [radius, setRadius] = useState<number>(initialState.radius);
+  const [geolocation, setGeolocation] = useState<AddressContext["geolocation"]>(
+    initialState.geolocation
+  );
 
   useEffect(() => {
     const cookies = parseCookies(null);
@@ -54,7 +66,12 @@ export const PreferencesContextProvider = ({
         );
         setAddress(v.location.address);
         setCep(v.cep);
-        setRadius(v.radius);
+        setRadius(v.radius || 20);
+
+        setGeolocation({
+          lat: v.location.lat,
+          lng: v.location.lng,
+        });
       } catch (e) {
         return;
       }
@@ -63,7 +80,15 @@ export const PreferencesContextProvider = ({
 
   return (
     <PreferencesContext.Provider
-      value={{ address, cep, radius, setAddress, setCep, setRadius }}
+      value={{
+        geolocation,
+        address,
+        cep,
+        radius,
+        setAddress,
+        setCep,
+        setRadius,
+      }}
     >
       {children}
     </PreferencesContext.Provider>
