@@ -118,9 +118,9 @@ export const Header = () => {
             ...source.templates,
             item({ item, components }) {
               return (
-                <div>
+                <Link href={`/search/?query=${item.name}`}>
                   <components.ReverseHighlight hit={item} attribute="name" />
-                </div>
+                </Link>
               );
             },
           },

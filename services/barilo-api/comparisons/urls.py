@@ -1,13 +1,13 @@
 from django.urls import path
-from comparisons.views import ListProcuctBucketListView
+from comparisons.views import SearchProcuctBucketListView
 
 app_name = "comparisons"
 
 urlpatterns = [
     # public resources
     path(
-        "comparison/",
-        ListProcuctBucketListView.as_view(),
-        name="productbucket-list",
+        "comparison/search/",
+        SearchProcuctBucketListView.as_view(),
+        name="productbucket-search",
     ),
 ]

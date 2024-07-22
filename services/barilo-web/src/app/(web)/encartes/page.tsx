@@ -32,7 +32,6 @@ const fetcher = (
 export default function CircularsPage() {
   const { geolocation, radius } = usePreferences();
   const { lat, lng } = geolocation;
-  console.log(lat, lng, radius);
   const {
     data: circulars,
     error,
