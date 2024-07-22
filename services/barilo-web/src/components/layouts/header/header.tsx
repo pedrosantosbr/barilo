@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   preferenceCookieSchema,
   usePreferences,
@@ -34,26 +34,140 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Session } from "next-auth";
 
+// Agolia search
+import { autocomplete, getAlgoliaResults } from "@algolia/autocomplete-js";
+import { createQuerySuggestionsPlugin } from "@algolia/autocomplete-plugin-query-suggestions";
+import { createLocalStorageRecentSearchesPlugin } from "@algolia/autocomplete-plugin-recent-searches";
+
+import algoliasearch from "algoliasearch";
+
+import "@algolia/autocomplete-theme-classic";
+import { Autocomplete } from "./agolia-autocomplete";
+import { useLazyRef } from "@/hooks/use-lazy-ref";
+
+const searchClient = algoliasearch(
+  "0DXV2NH0YA",
+  "2e8620b03086c6e334d978a8853d664b"
+);
+
 export const Header = () => {
   const { status, data } = useSession();
   const user: Session["user"] = { address: "", ...data?.user };
 
   const isAuthenticated = status === "authenticated";
 
+  const getRecentSearchesPlugin = useLazyRef(() =>
+    createLocalStorageRecentSearchesPlugin({
+      key: "RECENT_SEARCH",
+      limit: 5,
+      transformSource({ source, onTapAhead, onRemove }) {
+        return {
+          ...source,
+          // templates: {
+          //   item({ item, components }) {
+          //     return (
+          //       <AutocompleteItem
+          //         router={router}
+          //         href={`/search/?query=${item.label}`}
+          //         icon={ClockIcon}
+          //         actions={
+          //           <>
+          //             <AutocompleteItemAction
+          //               icon={TrashIcon}
+          //               title="Remove this search"
+          //               onClick={(event) => {
+          //                 event.preventDefault();
+          //                 event.stopPropagation();
+
+          //                 onRemove(item.label);
+          //               }}
+          //             />
+          //             <AutocompleteItemAction
+          //               icon={ArrowUpLeftIcon}
+          //               title={`Fill query with "${item.label}"`}
+          //               onClick={(event) => {
+          //                 event.preventDefault();
+          //                 event.stopPropagation();
+
+          //                 onTapAhead(item);
+          //               }}
+          //             />
+          //           </>
+          //         }
+          //       >
+          //         <components.ReverseHighlight hit={item} attribute="label" />
+          //       </AutocompleteItem>
+          //     );
+          //   },
+          // },
+        };
+      },
+    })
+  );
+  const getQuerySuggestionsPlugin = useLazyRef(() =>
+    createQuerySuggestionsPlugin({
+      searchClient,
+      indexName: "dev_product_index",
+      transformSource({ source, onTapAhead }) {
+        return {
+          ...source,
+          getItemUrl({ item }) {
+            return `/search/?query=${item.query}`;
+          },
+          templates: {
+            ...source.templates,
+            item({ item, components }) {
+              return (
+                <div>
+                  <components.ReverseHighlight hit={item} attribute="name" />
+                </div>
+              );
+            },
+          },
+          // templates: {
+          //   ...source.templates,
+          //   item({ item, components }) {
+          //     return (
+          //       <AutocompleteItem
+          //         router={router}
+          //         href={`/search/?query=${item.query}`}
+          //         icon={MagnifyingGlassIcon}
+          //         actions={
+          //           <AutocompleteItemAction
+          //             icon={ArrowUpLeftIcon}
+          //             title={`Fill query with "${item.query}"`}
+          //             onClick={(event) => {
+          //               event.preventDefault();
+          //               event.stopPropagation();
+
+          //               onTapAhead(item);
+          //             }}
+          //           />
+          //         }
+          //       >
+          //         <components.ReverseHighlight hit={item} attribute="query" />
+          //       </AutocompleteItem>
+          //     );
+          //   },
+          // },
+        };
+      },
+    })
+  );
+
   return (
     <header className="bg-amber-400 dark:bg-black">
-      <div className="h-14 grid items-center grid-cols-12 container gap-4">
-        <div className="col-span-2">
+      <div className="h-14 pt-2 grid items-center grid-cols-12 container gap-4">
+        <div className="col-span-1">
           <div className="font-bold text-2xl">Barilo</div>
         </div>
         {/* <ShoppingSimulatorForm /> */}
-        <div className="col-span-6">
-          <Input
-            className=""
-            placeholder="Digite um produto que deseja comprar"
+        <div className="col-span-5">
+          <Autocomplete
+            plugins={[getRecentSearchesPlugin(), getQuerySuggestionsPlugin()]}
           />
         </div>
-        <div className="col-span-4 justify-self-end">
+        <div className="col-span-6 justify-self-end">
           <nav className="">
             <ul className="flex space-x-4 items-center font-medium">
               {/* <li>

@@ -64,7 +64,7 @@ class ProductBucketSearchFilter(filters.SearchFilter):
     search_param = "name"
 
 
-class SearchProcuctBucketListView(generics.ListAPIView):
+class ListProcuctBucketListView(generics.ListAPIView):
     queryset = ProductBucket.objects.prefetch_related(
         Prefetch(
             lookup="productbucketitem_set",
