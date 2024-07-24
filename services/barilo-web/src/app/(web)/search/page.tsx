@@ -1,10 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Slider } from "@/components/ui/slider";
 import { usePreferences } from "@/contexts/preferences-context";
 import { ComparisonSearchSchema } from "@/entities/comparison";
+import { cn } from "@/lib/utils";
+import { ShoppingBasket } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import useSWR, { SWRResponse } from "swr";
 import { z } from "zod";
 
@@ -27,160 +32,134 @@ const fetcher = (
 export default function Search() {
   const searchParams = useSearchParams();
   const query = searchParams?.get("query");
-  const { geolocation, radius } = usePreferences();
+  const { geolocation, radius, setRadius } = usePreferences();
   const {
-    data,
+    data: results,
     error,
     isLoading,
   }: SWRResponse<z.infer<typeof ComparisonSearchSchema>, APIError> = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/comparison/search/name=${query}&lat=${geolocation.lat}&lng=${geolocation.lng}&radius=${radius}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/comparison/search/?name=${query}&lat=${geolocation.lat}&lng=${geolocation.lng}&radius=${radius}`,
     fetcher
   );
+
+  const brands: string[] = useMemo(() => {
+    if (!results) return [];
+    const brandList = results.flatMap((comparison) =>
+      comparison.products.map((product) => product.brand || "")
+    );
+    return Array.from(new Set(brandList));
+  }, [results]);
+
+  const markets: string[] = useMemo(() => {
+    if (!results) return [];
+    const marketList = results.flatMap((comparison) =>
+      comparison.products.map((product) => product.market || "")
+    );
+    return Array.from(new Set(marketList));
+  }, [results]);
 
   return (
     <main className="flex min-h-screen overflow-y-auto flex-col items-center pb-40">
       <div className="container space-y-10 mt-10">
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-12 gap-4">
           {/* siderbar */}
-          <div className="col-span-3">
+          <div className="col-span-3 space-y-12 pr-6">
             {/* distance */}
-            <div className="text-sm font-semibold py-4">
-              Alcança da pesquisa
+            <div className="space-y-4">
+              <div className="text-sm font-semibold">Alcançe da pesquisa</div>
+              <hr />
+              {/* TODO DistanceComponent */}
+              <Slider
+                value={[radius]}
+                onValueChange={(e) => setRadius(e[0])}
+                defaultValue={[20]}
+                max={100}
+                step={5}
+                className={cn("mr-2")}
+              />
+              <div className="text-xs text-gray-500">
+                {radius} km de distância
+              </div>
             </div>
-            <hr />
-            {/* <Slider className="w-full" /> */}
+            {/* brands */}
+            <div className="space-y-4">
+              <div className="text-sm font-semibold">Marcas</div>
+              <hr />
+              <div className="space-y-2 flex flex-col">
+                {/* TODO: OptionComponent */}
+                {brands?.map((brand, idx) => (
+                  <div key={idx} className="flex items-center space-x-2">
+                    <Checkbox id={brand} />
+                    <label
+                      htmlFor={brand}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {brand}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          {/* results */}
+
+          {/* TODO: ResultsComponent */}
           <div className="col-span-9">
             {/* product */}
             <div className="mb-4 text-xs">
-              <span className="font-bold">230</span> resultados encontrados
+              <span className="font-bold">{results?.length}</span> resultados
+              encontrados em <span className="font-bold">{markets.length}</span>{" "}
+              supermercados diferentes
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-6 bg-background shadow-md rounded-sm space-y-4">
-                {/* imagem */}
-                <div className="w-full h-[200px]">
-                  <Skeleton className="w-full h-full" />
-                </div>
-                {/* metadata */}
-                <div className="">
-                  <div className="text-sm font-bold text-amber-500">Marca</div>
-                  <div className="font-bold">
-                    Café Faraó moído 250g para máquina
-                  </div>
-                  <div className="text-xs text-muted-foreground">250g</div>
-                </div>
+              {isLoading ? (
+                <Skeleton />
+              ) : error ? (
+                <div>{error.message}</div>
+              ) : (
+                // TODO: ProductComponent
+                results?.map((comparison) => (
+                  <div
+                    key={comparison.id}
+                    className="bg-white relative p-4 space-y-4 shadow-sm"
+                  >
+                    <div className="absolute top-0 right-0 p-2 bg-red-600 text-white text-xs rounded-tr-md font-bold">
+                      Economize até 10%
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="text-sm font-bold text-gray-500">
+                        {comparison.products[0].brand}
+                      </div>
+                      <div className="text-lg font-semibold">
+                        {comparison.products[0].name}
+                      </div>
+                      <p className="text-xs text-gray-600 font-medium">
+                        {comparison.products[0].weight}
+                      </p>
+                    </div>
 
-                <div className="text-xs text-muted-foreground">
-                  Disponível em 4 supermercados
-                </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-medium">
+                        Disponível em 2 supermercados
+                      </p>
+                    </div>
 
-                {/* price */}
-                <div className="flex justify-between items-end">
-                  <div>
-                    <small className="text-xs text-muted-foreground">
-                      Desde
-                    </small>
-                    <p className="font-bold">2,40 R$</p>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-[10px] text-gray-500">Desde</p>
+                        <p className="text-lg font-semibold">
+                          {comparison.min_price}{" "}
+                          <span className="text-xs">R$</span>
+                        </p>
+                      </div>
+                      <div className="">
+                        <Button className="w-full">
+                          <ShoppingBasket className="w-4 mr-2" /> Add carrinho
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                  <Button size={"sm"} className="text-xs">
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
-              <div className="p-6 bg-background shadow-md rounded-sm space-y-4">
-                {/* imagem */}
-                <div className="w-full h-[200px]">
-                  <Skeleton className="w-full h-full" />
-                </div>
-                {/* metadata */}
-                <div className="">
-                  <div className="text-sm font-bold text-amber-500">Marca</div>
-                  <div className="font-bold">
-                    Café Faraó moído 250g para máquina
-                  </div>
-                  <div className="text-xs text-muted-foreground">250g</div>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  Disponível em 4 supermercados
-                </div>
-
-                {/* price */}
-                <div className="flex justify-between items-end">
-                  <div>
-                    <small className="text-xs text-muted-foreground">
-                      Desde
-                    </small>
-                    <p className="font-extrabold">2,40 R$</p>
-                  </div>
-                  <Button size={"sm"} className="text-xs">
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
-              <div className="p-6 bg-background shadow-md rounded-sm space-y-4">
-                {/* imagem */}
-                <div className="w-full h-[200px]">
-                  <Skeleton className="w-full h-full" />
-                </div>
-                {/* metadata */}
-                <div className="">
-                  <div className="text-sm font-bold text-amber-500">Marca</div>
-                  <div className="font-bold">
-                    Café Faraó moído 250g para máquina
-                  </div>
-                  <div className="text-xs text-muted-foreground">250g</div>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  Disponível em 4 supermercados
-                </div>
-
-                {/* price */}
-                <div className="flex justify-between items-end">
-                  <div>
-                    <small className="text-xs text-muted-foreground">
-                      Desde
-                    </small>
-                    <p className="font-bold">2,40 R$</p>
-                  </div>
-                  <Button size={"sm"} className="text-xs">
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
-              <div className="p-6 bg-background shadow-md rounded-sm space-y-4">
-                {/* imagem */}
-                <div className="w-full h-[200px]">
-                  <Skeleton className="w-full h-full" />
-                </div>
-                {/* metadata */}
-                <div className="">
-                  <div className="text-sm font-bold text-amber-500">Marca</div>
-                  <div className="font-bold">
-                    Café Faraó moído 250g para máquina
-                  </div>
-                  <div className="text-xs text-muted-foreground">250g</div>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  Disponível em 4 supermercados
-                </div>
-
-                {/* price */}
-                <div className="flex justify-between items-end">
-                  <div>
-                    <small className="text-xs text-muted-foreground">
-                      Desde
-                    </small>
-                    <p className="font-bold">2,40 R$</p>
-                  </div>
-                  <Button size={"sm"} className="text-xs">
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </div>

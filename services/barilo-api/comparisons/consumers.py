@@ -47,49 +47,36 @@ class AgoliaSearchRabbitMQConsumer(BlockingBaseConsumer):
             logger.info("👾 [x] Processing message:", _id=self._id, params=params)
 
             if params["brand"] is not None:
-                product_index_name = (
+                product_description = (
                     f"{params.get('brand', '')} {params['name']} {params['weight']}"
                 ).strip()
             else:
-                product_index_name = f"{params['name']} {params['weight']}"
+                product_description = f"{params['name']} {params['weight']}"
 
             with transaction.atomic():
-                # try:
-                #     mid = params["market"]["id"]
-                #     market = Market.objects.get(id=mid)
-                # except Market.DoesNotExist as e:
-                #     logger.error(f"Market not found with id: {mid}")
-                #     raise SearchException(f"Market not found for id {mid}") from e
-
-                # try:
-                #     product_idx = ProductIndex.objects.create(
-                #         name=product_index_name,
-                #         price=params["price"],
-                #         weight=params["weight"],
-                #         brand=params.get("brand", None),
-                #         address=params["market"]["address"],
-                #         market=market,
-                #     )
-                # except Exception as e:
-                #     logger.error(f"Failed to create product index {product_index_name}")
-                #     raise SearchException(
-                #         f"Failed to create {product_index_name} on postgresql"
-                #     ) from e
-
                 try:
                     agl_product = AgoliaProduct()
+
+                    resp = agl_product.search(product_description)
+                    if resp["hits"] > 0:
+                        logger.info(
+                            f"Product {product_description} already exists on Agolia"
+                        )
+                        return
+
                     agl_product.create(
-                        name=product_index_name,
+                        name=params["name"],
+                        description=product_description,
                         weight=params["weight"],
                         brand=params.get("brand", None),
                         objectID=params["id"],
                     )
                 except Exception as e:
                     logger.error(
-                        f"Failed to save {product_index_name} on Agolia", msg=str(e)
+                        f"Failed to save {product_description} on Agolia", msg=str(e)
                     )
                     raise SearchException(
-                        f"Failed to save {product_index_name} index on Agolia"
+                        f"Failed to save {product_description} index on Agolia"
                     ) from e
 
 

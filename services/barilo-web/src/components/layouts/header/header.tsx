@@ -35,7 +35,6 @@ import {
 import { Session } from "next-auth";
 
 // Agolia search
-import { autocomplete, getAlgoliaResults } from "@algolia/autocomplete-js";
 import { createQuerySuggestionsPlugin } from "@algolia/autocomplete-plugin-query-suggestions";
 import { createLocalStorageRecentSearchesPlugin } from "@algolia/autocomplete-plugin-recent-searches";
 
@@ -44,6 +43,7 @@ import algoliasearch from "algoliasearch";
 import "@algolia/autocomplete-theme-classic";
 import { Autocomplete } from "./agolia-autocomplete";
 import { useLazyRef } from "@/hooks/use-lazy-ref";
+import { useRouter } from "next/navigation";
 
 const searchClient = algoliasearch(
   "0DXV2NH0YA",
@@ -53,7 +53,7 @@ const searchClient = algoliasearch(
 export const Header = () => {
   const { status, data } = useSession();
   const user: Session["user"] = { address: "", ...data?.user };
-
+  const router = useRouter();
   const isAuthenticated = status === "authenticated";
 
   const getRecentSearchesPlugin = useLazyRef(() =>
@@ -164,6 +164,13 @@ export const Header = () => {
         {/* <ShoppingSimulatorForm /> */}
         <div className="col-span-5">
           <Autocomplete
+            classNames={{
+              form: "relative rounded-lg flex-1",
+              input: "border-black border-2 rounded-lg p-2 w-full",
+              inputWrapper: "rounded-lg",
+              detachedSearchButtonIcon: "text-black",
+            }}
+            onSubmit={(e) => router.push(`/search/?query=${e.state.query}`)}
             plugins={[getRecentSearchesPlugin(), getQuerySuggestionsPlugin()]}
           />
         </div>

@@ -122,16 +122,19 @@ const CircularCard: FC<{ circular: Circular }> = ({ circular }) => {
       </div>
       <ul className="text-sm mt-4">
         {circular.items.map((item, idx) => (
-          <li
-            key={idx}
-            className="flex space-x-2 items-center border-b border-dashed p-1"
-          >
+          <li key={idx} className="border-b border-dashed p-1">
             {/* <div className="w-5 h-5 flex items-center">🛒</div> */}
-            <div className="font-medium tracking-wide capitalize">
-              {item.product.name}
+            <div className="flex space-x-2 items-center">
+              <div className="font-medium tracking-wide capitalize">
+                {item.product.name}
+              </div>
+              <div className="font-bold text-foreground">
+                ${item.discount_price}
+              </div>
             </div>
-            <div className="font-bold text-foreground">
-              ${item.discount_price}
+            <div className="text-xs font-bold text-gray-500">
+              {item.product.brand ? `${item.product.brand} - ` : ""}{" "}
+              {item.product.weight}
             </div>
           </li>
         ))}
