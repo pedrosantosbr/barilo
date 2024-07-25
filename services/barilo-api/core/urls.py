@@ -64,4 +64,5 @@ urlpatterns = [
     path("api/v1/", include("circulars.urls")),
     path("api/v1/", include("accounts.urls")),
     path("api/v1/", include("comparisons.urls")),
+    path("api/v1/cart/", include("cart.urls")),
 ]

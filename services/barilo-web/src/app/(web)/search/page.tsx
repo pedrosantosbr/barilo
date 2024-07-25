@@ -127,19 +127,19 @@ export default function Search() {
                     </div>
                     <div className="flex flex-col">
                       <div className="text-sm font-bold text-gray-500">
-                        {comparison.products[0].brand}
+                        {comparison.cheapest_product.brand}
                       </div>
                       <div className="text-lg font-semibold">
-                        {comparison.products[0].name}
+                        {comparison.cheapest_product.name}
                       </div>
                       <p className="text-xs text-gray-600 font-medium">
-                        {comparison.products[0].weight}
+                        {comparison.cheapest_product.weight}
                       </p>
                     </div>
 
                     <div>
                       <p className="text-xs text-gray-600 font-medium">
-                        Disponível em 2 supermercados
+                        Disponível em {markets.length} supermercados
                       </p>
                     </div>
 
@@ -147,7 +147,7 @@ export default function Search() {
                       <div>
                         <p className="text-[10px] text-gray-500">Desde</p>
                         <p className="text-lg font-semibold">
-                          {comparison.min_price}{" "}
+                          {comparison.cheapest_product.price}{" "}
                           <span className="text-xs">R$</span>
                         </p>
                       </div>

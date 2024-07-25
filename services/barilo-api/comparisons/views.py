@@ -33,12 +33,17 @@ class ProductBucketSerializer(serializers.ModelSerializer):
 
     total = serializers.SerializerMethodField()
     products = serializers.SerializerMethodField()
-    min_price = serializers.SerializerMethodField()
-    max_price = serializers.SerializerMethodField()
+    cheapest_product = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductBucket
-        fields = ["id", "name", "total", "products", "min_price", "max_price"]
+        fields = [
+            "id",
+            "name",
+            "total",
+            "products",
+            "cheapest_product",
+        ]
 
     def get_total(self, obj):
         return len(obj.product_bucket_items)
@@ -51,17 +56,8 @@ class ProductBucketSerializer(serializers.ModelSerializer):
 
         return products
 
-    def get_min_price(self, obj):
-        prices = []
-        for product in obj.product_bucket_items:
-            prices.append(product.product.price)
-        return min(prices)
-
-    def get_max_price(self, obj):
-        prices = []
-        for product in obj.product_bucket_items:
-            prices.append(product.product.price)
-        return max(prices)
+    def get_cheapest_product(self, obj):
+        return ProductSerializer(obj.product_bucket_items[0].product).data
 
 
 class ProductBucketSearchFilter(filters.SearchFilter):
@@ -113,7 +109,6 @@ class SearchProcuctBucketListView(generics.ListAPIView):
             )
 
         if user_location:
-            logger.info("Filtering by location", user_location=user_location, rad=rad)
             nearby_locations = (
                 Location.objects.annotate(
                     distance=Distance("geolocation", user_location)
@@ -122,9 +117,16 @@ class SearchProcuctBucketListView(generics.ListAPIView):
                 .values_list("id", flat=True)
             )
 
-            filtered_items = ProductBucketItem.objects.filter(
-                product__location__id__in=nearby_locations
-            ).prefetch_related("product")
+            filtered_items = (
+                ProductBucketItem.objects.filter(
+                    product__location__id__in=nearby_locations
+                )
+                .prefetch_related("product")
+                .annotate(
+                    distance=Distance("product__location__geolocation", user_location)
+                )
+                .order_by("product__price", "distance")
+            )
 
             queryset = queryset.prefetch_related(
                 Prefetch(

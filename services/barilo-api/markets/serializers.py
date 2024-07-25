@@ -11,6 +11,14 @@ class MarketSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ReadMarketSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    # logo = serializers.URLField()
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField()
+
+
 class LocationSerializer(serializers.ModelSerializer):
     lat = serializers.SerializerMethodField()
     lng = serializers.SerializerMethodField()

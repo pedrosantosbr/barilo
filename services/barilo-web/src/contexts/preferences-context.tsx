@@ -3,7 +3,6 @@ import z from "zod";
 
 // import cookies
 import { parseCookies } from "nookies";
-import { set } from "date-fns";
 
 export const preferenceCookieSchema = z.object({
   cep: z.string().optional(),

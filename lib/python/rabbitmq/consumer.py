@@ -204,6 +204,9 @@ class BaseConsumer(ABC):
             callback=cb,
         )
 
+        # DLQ
+        self._channel.exchange_declare(exchange="dlx_exchange", exchange_type="direct")
+
     def on_exchange_declareok(self, _unused_frame, userdata):
         """Invoked by pika when RabbitMQ has finished the Exchange.Declare RPC
         command.
@@ -214,6 +217,7 @@ class BaseConsumer(ABC):
         """
         LOGGER.info("Exchange declared: %s", userdata)
         self.setup_queue(self.QUEUE)
+        self.setup_queue("dlx_queue")
 
     def setup_queue(self, queue_name):
         """Setup the queue on RabbitMQ by invoking the Queue.Declare RPC
@@ -224,8 +228,20 @@ class BaseConsumer(ABC):
 
         """
         LOGGER.info("Declaring queue %s", queue_name)
-        cb = functools.partial(self.on_queue_declareok, userdata=queue_name)
-        self._channel.queue_declare(queue=queue_name, callback=cb)
+        if queue_name != "dlx_queue":
+            # Declare the main queue with DLX settings
+            arguments = {
+                "x-dead-letter-exchange": "dlx_exchange",
+                "x-dead-letter-routing-key": "dlx_routing_key",
+            }
+            cb = functools.partial(self.on_queue_declareok, userdata=queue_name)
+            self._channel.queue_declare(
+                queue=queue_name, durable=True, callback=cb, arguments=arguments
+            )
+        else:
+            # Declare the DLX queue
+            cb = functools.partial(self.on_queue_declareok, userdata=queue_name)
+            self._channel.queue_declare(queue=queue_name, durable=True, callback=cb)
 
     def on_queue_declareok(self, _unused_frame, userdata):
         """Method invoked by pika when the Queue.Declare RPC call made in
@@ -242,10 +258,18 @@ class BaseConsumer(ABC):
         LOGGER.info(
             "Binding %s to %s with %s", self.EXCHANGE, queue_name, self.ROUTING_KEY
         )
-        cb = functools.partial(self.on_bindok, userdata=queue_name)
-        self._channel.queue_bind(
-            queue_name, self.EXCHANGE, routing_key=self.ROUTING_KEY, callback=cb
-        )
+        if queue_name != "dlx_exchange":
+            cb = functools.partial(self.on_bindok, userdata=queue_name)
+            self._channel.queue_bind(
+                queue_name, self.EXCHANGE, routing_key=self.ROUTING_KEY, callback=cb
+            )
+        else:
+            cb = functools.partial(self.on_bindok, userdata="dlx_queue")
+            self._channel.queue_bind(
+                exchange="dlx_exchange",
+                queue=queue_name,
+                routing_key="dlx_routing_key",
+            )
 
     def on_bindok(self, _unused_frame, userdata):
         """Invoked by pika when the Queue.Bind method has completed. At this
@@ -453,6 +477,18 @@ class BlockingBaseConsumer(ABC):
     def connect(self):
         self._connection = pika.BlockingConnection(pika.URLParameters(self._url))
         self._channel = self._connection.channel()
+        # Declare the dead letter exchange and queue
+        self._channel.exchange_declare(exchange="dlx_exchange", exchange_type="direct")
+        self._channel.queue_declare(queue="dlx_queue", durable=True)
+        self._channel.queue_bind(
+            exchange="dlx_exchange", queue="dlx_queue", routing_key="dlx_routing_key"
+        )
+
+        # Declare the main queue with DLX settings
+        arguments = {
+            "x-dead-letter-exchange": "dlx_exchange",
+            "x-dead-letter-routing-key": "dlx_routing_key",
+        }
         self._channel.exchange_declare(
             exchange=self.EXCHANGE,
             exchange_type=ExchangeType.topic,
@@ -462,8 +498,8 @@ class BlockingBaseConsumer(ABC):
         )
         self._channel.queue_declare(
             queue=self.QUEUE,
-            auto_delete=True,
-            exclusive=False,
+            durable=True,
+            arguments=arguments,
         )
         self._channel.queue_bind(
             queue=self.QUEUE, exchange=self.EXCHANGE, routing_key=self.ROUTING_KEY
@@ -498,8 +534,8 @@ class BlockingBaseConsumer(ABC):
             self.consume_message(method_frame.routing_key, body)
             self.acknowledge_message(method_frame.delivery_tag)
         except Exception as e:
-            LOGGER.error("Error consuming message: %s", e)
-            self.reject_message(method_frame.delivery_tag)
+            LOGGER.error(f"Error processing message: {str(e)}. Sending to DLQ.")
+            self.reject_message(delivery_tag=method_frame.delivery_tag)
 
     @abstractmethod
     def consume_message(self, topic, body):

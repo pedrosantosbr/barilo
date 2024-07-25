@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "products",
     "circulars",
     "comparisons",
+    "cart",
     "corsheaders",
     "rest_framework_simplejwt",
     "django.contrib.postgres",
@@ -297,6 +298,23 @@ LOGGING = {
     },
 }
 
+
+BARILO_REDIS_HOST = os.getenv("BARILO_REDIS_HOST", "redis")
+BARILO_REDIS_PORT = os.getenv("BARILO_REDIS_PORT", 6379)
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{BARILO_REDIS_HOST}:{BARILO_REDIS_PORT}/1",  # Adjust this if your Redis instance is elsewhere
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+CART_SESSION_ID = "cart"
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 AGOLIA_APP_ID = os.getenv("AGOLIA_APP_ID", "app_id")
 AGOLIA_ADMIN_API_KEY = os.getenv("AGOLIA_ADMIN_API_KEY", "admin_api_key")
