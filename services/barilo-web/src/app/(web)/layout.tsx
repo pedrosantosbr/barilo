@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layouts/header";
+import { CartContextProvider } from "@/contexts/cart-context";
 import { PreferencesContextProvider } from "@/contexts/preferences-context";
 import { SessionProvider } from "next-auth/react";
 
@@ -12,8 +13,10 @@ export default function WebLayout({
   return (
     <div>
       <PreferencesContextProvider>
-        <Header />
-        {children}
+        <CartContextProvider>
+          <Header />
+          {children}
+        </CartContextProvider>
       </PreferencesContextProvider>
     </div>
   );

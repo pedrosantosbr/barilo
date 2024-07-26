@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
+import { useCart } from "@/contexts/cart-context";
 import { usePreferences } from "@/contexts/preferences-context";
 import { ComparisonSearchSchema } from "@/entities/comparison";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,13 @@ export default function Search() {
     fetcher
   );
 
+  // -
+
+  const { addItem, removeItem, items } = useCart();
+  const productIsInCart = (productId: string) =>
+    items.some((item) => item.product.id === productId);
+
+  // -
   const brands: string[] = useMemo(() => {
     if (!results) return [];
     const brandList = results.flatMap((comparison) =>
@@ -122,8 +130,8 @@ export default function Search() {
                     key={comparison.id}
                     className="bg-white relative p-4 space-y-4 shadow-sm"
                   >
-                    <div className="absolute top-0 right-0 p-2 bg-red-600 text-white text-xs rounded-tr-md font-bold">
-                      Economize até 10%
+                    <div className="absolute top-0 right-0 p-2  text-white text-xs rounded-tr-md font-bold">
+                      <span className="text-red-500">Economize até 10%</span>
                     </div>
                     <div className="flex flex-col">
                       <div className="text-sm font-bold text-gray-500">
@@ -152,9 +160,20 @@ export default function Search() {
                         </p>
                       </div>
                       <div className="">
-                        <Button className="w-full">
-                          <ShoppingBasket className="w-4 mr-2" /> Add carrinho
-                        </Button>
+                        {productIsInCart(comparison.cheapest_product.id) ? (
+                          <Button className="w-full" disabled>
+                            Adicionado
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full"
+                            onClick={() =>
+                              addItem(comparison.cheapest_product.id)
+                            }
+                          >
+                            <ShoppingBasket className="w-4 mr-2" /> Add carrinho
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

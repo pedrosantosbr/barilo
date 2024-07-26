@@ -109,6 +109,7 @@ class SearchProcuctBucketListView(generics.ListAPIView):
             )
 
         if user_location:
+            # Get all locations within the radius
             nearby_locations = (
                 Location.objects.annotate(
                     distance=Distance("geolocation", user_location)
@@ -117,6 +118,7 @@ class SearchProcuctBucketListView(generics.ListAPIView):
                 .values_list("id", flat=True)
             )
 
+            # Get all products within the nearby locations
             filtered_items = (
                 ProductBucketItem.objects.filter(
                     product__location__id__in=nearby_locations
@@ -128,6 +130,7 @@ class SearchProcuctBucketListView(generics.ListAPIView):
                 .order_by("product__price", "distance")
             )
 
+            # Prefetch the filtered items
             queryset = queryset.prefetch_related(
                 Prefetch(
                     "productbucketitem_set",

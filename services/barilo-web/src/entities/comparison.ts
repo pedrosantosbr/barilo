@@ -16,8 +16,6 @@ export const ComparisonSearchSchema = z
     name: z.string(),
     total: z.number(),
     products: productSchema.array(),
-    min_price: z.number(),
-    max_price: z.number(),
     cheapest_product: productSchema,
   })
   .array();

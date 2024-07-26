@@ -44,6 +44,8 @@ import "@algolia/autocomplete-theme-classic";
 import { Autocomplete } from "./agolia-autocomplete";
 import { useLazyRef } from "@/hooks/use-lazy-ref";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/contexts/cart-context";
+import { Badge } from "@/components/ui/badge";
 
 const searchClient = algoliasearch(
   "0DXV2NH0YA",
@@ -155,6 +157,8 @@ export const Header = () => {
     })
   );
 
+  const { items } = useCart();
+
   return (
     <header className="bg-amber-400 dark:bg-black">
       <div className="h-14 pt-2 grid items-center grid-cols-12 container gap-4">
@@ -184,7 +188,10 @@ export const Header = () => {
               </li> */}
               <li>
                 <Link href="/" className="flex items-center">
-                  <ShoppingCart className="mr-2 w-4" /> E-Cart
+                  {items.length > 0 && (
+                    <Badge variant={"destructive"}>{items.length}</Badge>
+                  )}
+                  <ShoppingCart className="mr-2 w-4 " /> E-Cart
                 </Link>
               </li>
               <li>
