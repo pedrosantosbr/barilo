@@ -158,6 +158,7 @@ export const Header = () => {
   );
 
   const { items } = useCart();
+  const productsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <header className="bg-amber-400 dark:bg-black">
@@ -165,14 +166,11 @@ export const Header = () => {
         <div className="col-span-1">
           <div className="font-bold text-2xl">Barilo</div>
         </div>
-        {/* <ShoppingSimulatorForm /> */}
         <div className="col-span-5">
           <Autocomplete
             classNames={{
-              form: "relative rounded-lg flex-1",
-              input: "border-black border-2 rounded-lg p-2 w-full",
+              form: "relative !border-gray-100 !rounded-lg flex-1",
               inputWrapper: "rounded-lg",
-              detachedSearchButtonIcon: "text-black",
             }}
             onSubmit={(e) => router.push(`/search/?query=${e.state.query}`)}
             plugins={[getRecentSearchesPlugin(), getQuerySuggestionsPlugin()]}
@@ -187,11 +185,11 @@ export const Header = () => {
                 </Link>
               </li> */}
               <li>
-                <Link href="/" className="flex items-center">
+                <Link href="/carrinho" className="flex items-center">
                   {items.length > 0 && (
-                    <Badge variant={"destructive"}>{items.length}</Badge>
+                    <Badge variant={"destructive"}>{productsCount}</Badge>
                   )}
-                  <ShoppingCart className="mr-2 w-4 " /> E-Cart
+                  <ShoppingCart className="mr-2 w-4 " /> Carrinho
                 </Link>
               </li>
               <li>

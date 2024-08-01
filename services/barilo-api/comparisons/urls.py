@@ -9,5 +9,5 @@ urlpatterns = [
         "comparison/search/",
         SearchProcuctBucketListView.as_view(),
         name="productbucket-search",
-    ),
+    )
 ]

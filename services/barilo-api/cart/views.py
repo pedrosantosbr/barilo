@@ -4,8 +4,17 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from products.models import Product
 from cart.cart import Cart
-from products.serializers import ProductSerializer
+from markets.serializers import MarketSerializer, LocationSerializer
 from django.shortcuts import get_object_or_404
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    market = MarketSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "price", "weight", "brand", "market", "location"]
 
 
 class CartItemSerializer(serializers.Serializer):
@@ -30,6 +39,16 @@ def cart_remove(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart.remove(product)
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+def cart_update(request, product_id):
+    cart = Cart(request)
+    product = get_object_or_404(Product, id=product_id)
+    serializer = ProductSerializer(product)
+    quantity = int(request.data.get("quantity", 1))
+    cart.update(product=product, quantity=quantity)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

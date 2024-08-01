@@ -31,7 +31,7 @@
     "clsx": "^2.1.0",
     "crypto": "^1.0.1",
     "date-fns": "^3.6.0",
-    "framer-motion": "^11.2.9",
+    "framer-motion": "^11.3.20",
     "gray-matter": "^4.0.3",
     "input-otp": "^1.2.4",
     "jsonwebtoken": "^9.0.2",

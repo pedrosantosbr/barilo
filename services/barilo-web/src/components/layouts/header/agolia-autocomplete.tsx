@@ -81,8 +81,9 @@ export function Autocomplete<TItem extends Record<string, unknown>>(
 
         panelRootRef.current.render(children);
       },
-      placeholder: "Search for products...",
+      placeholder: "Pesquisar produtos...",
       insights: true,
+      ...props,
       // getSources({ query }) {
       //   return [
       //     {
@@ -112,7 +113,6 @@ export function Autocomplete<TItem extends Record<string, unknown>>(
       //     },
       //   ];
       // },
-      ...props,
     });
 
     return () => {

@@ -5,6 +5,7 @@ from products.models import Product
 from rest_framework import serializers, generics
 from django.db.models import Prefetch
 from markets.models import Location
+from markets.serializers import MarketSerializer, LocationSerializer
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.postgres.search import SearchVector
@@ -15,6 +16,9 @@ logger = structlog.get_logger(__name__)
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    market = MarketSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
+
     class Meta:
         model = Product
         fields = ["id", "name", "brand", "weight", "price", "location", "market"]

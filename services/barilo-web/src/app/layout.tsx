@@ -8,7 +8,11 @@ import { ThemeProvider } from "@/layouts/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { PreferencesContextProvider } from "@/contexts/preferences-context";
 
-const dm = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
+const dm = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["100", "200", "300", "400", "500", "700", "800", "1000"],
+});
 
 export default function RootLayout({
   children,

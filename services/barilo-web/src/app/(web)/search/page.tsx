@@ -6,7 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { useCart } from "@/contexts/cart-context";
 import { usePreferences } from "@/contexts/preferences-context";
-import { ComparisonSearchSchema } from "@/entities/comparison";
+import {
+  comparisonSchema,
+  ComparisonSearchSchema,
+} from "@/entities/comparison";
 import { cn } from "@/lib/utils";
 import { ShoppingBasket } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -45,7 +48,7 @@ export default function Search() {
 
   // -
 
-  const { addItem, removeItem, items } = useCart();
+  const { items, addItem } = useCart();
   const productIsInCart = (productId: string) =>
     items.some((item) => item.product.id === productId);
 
@@ -61,10 +64,16 @@ export default function Search() {
   const markets: string[] = useMemo(() => {
     if (!results) return [];
     const marketList = results.flatMap((comparison) =>
-      comparison.products.map((product) => product.market || "")
+      comparison.products.map((product) => product.market.id || "")
     );
     return Array.from(new Set(marketList));
   }, [results]);
+
+  function getProductMaxPrice(comparison: z.infer<typeof comparisonSchema>) {
+    return comparison.products.reduce((acc, product) => {
+      return Number(product.price) > acc ? Number(product.price) : acc;
+    }, 0);
+  }
 
   return (
     <main className="flex min-h-screen overflow-y-auto flex-col items-center pb-40">
@@ -134,7 +143,7 @@ export default function Search() {
                       <span className="text-red-500">Economize até 10%</span>
                     </div>
                     <div className="flex flex-col">
-                      <div className="text-sm font-bold text-gray-500">
+                      <div className="text-sm text-gray-600">
                         {comparison.cheapest_product.brand}
                       </div>
                       <div className="text-lg font-semibold">
@@ -154,7 +163,11 @@ export default function Search() {
                     <div className="flex justify-between items-end">
                       <div>
                         <p className="text-[10px] text-gray-500">Desde</p>
-                        <p className="text-lg font-semibold">
+                        <p className="text-xs font-bold text-red-500 line-through">
+                          {getProductMaxPrice(comparison)}{" "}
+                          <span className="text-[10px]">R$</span>
+                        </p>
+                        <p className="text-lg font-black">
                           {comparison.cheapest_product.price}{" "}
                           <span className="text-xs">R$</span>
                         </p>
