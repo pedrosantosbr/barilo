@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   preferenceCookieSchema,
   usePreferences,
@@ -38,19 +38,18 @@ import { Session } from "next-auth";
 import { createQuerySuggestionsPlugin } from "@algolia/autocomplete-plugin-query-suggestions";
 import { createLocalStorageRecentSearchesPlugin } from "@algolia/autocomplete-plugin-recent-searches";
 
-import algoliasearch from "algoliasearch";
-
 import "@algolia/autocomplete-theme-classic";
 import { Autocomplete } from "./agolia-autocomplete";
 import { useLazyRef } from "@/hooks/use-lazy-ref";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/cart-context";
 import { Badge } from "@/components/ui/badge";
+import { agoliaSearchClient } from "@/lib/agolia";
 
-const searchClient = algoliasearch(
-  "0DXV2NH0YA",
-  "2e8620b03086c6e334d978a8853d664b"
-);
+const searchClient = agoliaSearchClient();
+
+const AGOLIA_SEARCH_INDEX =
+  process.env.NODE_ENV === "production" ? "product_index" : "dev_product_index";
 
 export const Header = () => {
   const { status, data } = useSession();
@@ -106,10 +105,11 @@ export const Header = () => {
       },
     })
   );
+
   const getQuerySuggestionsPlugin = useLazyRef(() =>
     createQuerySuggestionsPlugin({
       searchClient,
-      indexName: "dev_product_index",
+      indexName: AGOLIA_SEARCH_INDEX,
       transformSource({ source, onTapAhead }) {
         return {
           ...source,
@@ -162,14 +162,16 @@ export const Header = () => {
 
   return (
     <header className="bg-amber-400 dark:bg-black">
-      <div className="h-14 pt-2 grid items-center grid-cols-12 container gap-4">
+      <div className="h-14 pt-4 grid items-center grid-cols-12 container gap-4">
         <div className="col-span-1">
-          <div className="font-bold text-2xl">Barilo</div>
+          <Link href={"/"}>
+            <div className="font-black text-2xl">Barilo</div>
+          </Link>
         </div>
         <div className="col-span-5">
           <Autocomplete
             classNames={{
-              form: "relative !border-gray-100 !rounded-lg flex-1",
+              form: "relative shadow-md !border-none !rounded-lg flex-1",
               inputWrapper: "rounded-lg",
             }}
             onSubmit={(e) => router.push(`/search/?query=${e.state.query}`)}
@@ -178,7 +180,7 @@ export const Header = () => {
         </div>
         <div className="col-span-6 justify-self-end">
           <nav className="">
-            <ul className="flex space-x-4 items-center font-medium">
+            <ul className="flex space-x-4 items-center font-medium text-md">
               {/* <li>
                 <Link href="/" className="flex items-center">
                   <HomeIcon className="mr-2 w-4" /> Menu inicial
@@ -193,7 +195,7 @@ export const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/" className="flex items-center">
+                <Link href="/encartes" className="flex items-center">
                   <Megaphone className="mr-2 w-4" /> Promoções & Encartes
                 </Link>
               </li>
@@ -207,7 +209,7 @@ export const Header = () => {
         </div>
       </div>
       {/*  */}
-      <div className="container h-10 flex">
+      <div className="container h-12 flex">
         <AddressModal />
 
         <div className="ml-auto h-10 flex items-center">

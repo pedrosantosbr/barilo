@@ -5,13 +5,13 @@ import { CircularListResponseSchema } from "@/entities/store";
 import { OffersTemplate } from "@/components/offers/offers-template";
 
 import { ConnectWhatsAppNumber } from "@/components/connect-whatsapp-number";
-import { Footer } from "@/components/layouts/footer";
 import { SelectRadiusPreference } from "@/components/preferences/select-radius-preference";
 
 import z from "zod";
 import useSWR, { SWRResponse } from "swr";
 import { useEffect, useState } from "react";
 import { usePreferences } from "@/contexts/preferences-context";
+import { useSession } from "next-auth/react";
 
 interface APIError {
   message: string;
@@ -30,8 +30,14 @@ const fetcher = (
   }).then((res) => res.json());
 
 export default function CircularsPage() {
+  const { status } = useSession();
+  const isAuthenticated = status === "authenticated";
+  const [phoneNumbers, setPhoneNumbers] = useState<{ phone_number: string }[]>(
+    []
+  );
   const { geolocation, radius } = usePreferences();
   const { lat, lng } = geolocation;
+
   const {
     data: circulars,
     error,
@@ -46,7 +52,31 @@ export default function CircularsPage() {
     mutate();
   }, [geolocation, radius, mutate]);
 
-  const [phoneNumbers, setPhoneNumbers] = useState([]);
+  useEffect(() => {
+    async function fetchRelatedProducts() {
+      try {
+        const resp = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/whatsapp/phone-numbers/`,
+          {
+            method: "GET",
+            mode: "cors",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = (await resp.json()) as { phone_number: string }[];
+        setPhoneNumbers(data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    if (isAuthenticated) {
+      fetchRelatedProducts();
+    }
+  }, [isAuthenticated]);
 
   return (
     <>
@@ -82,7 +112,6 @@ export default function CircularsPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

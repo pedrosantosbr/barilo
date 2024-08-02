@@ -1,5 +1,6 @@
 "use client";
 
+import { Footer } from "@/components/layouts/footer";
 import { Header } from "@/components/layouts/header";
 import { CartContextProvider } from "@/contexts/cart-context";
 import { PreferencesContextProvider } from "@/contexts/preferences-context";
@@ -11,13 +12,14 @@ export default function WebLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
+    <SessionProvider>
       <PreferencesContextProvider>
         <CartContextProvider>
           <Header />
           {children}
+          <Footer />
         </CartContextProvider>
       </PreferencesContextProvider>
-    </div>
+    </SessionProvider>
   );
 }

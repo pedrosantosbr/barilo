@@ -143,19 +143,19 @@ export default function Search() {
                       <span className="text-red-500">Economize até 10%</span>
                     </div>
                     <div className="flex flex-col">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-amber-600">
                         {comparison.cheapest_product.brand}
                       </div>
                       <div className="text-lg font-semibold">
                         {comparison.cheapest_product.name}
                       </div>
-                      <p className="text-xs text-gray-600 font-medium">
+                      <p className="text-xs text-gray-500 font-medium">
                         {comparison.cheapest_product.weight}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs text-gray-600 font-medium">
+                      <p className="text-xs text-gray-500 font-medium">
                         Disponível em {markets.length} supermercados
                       </p>
                     </div>

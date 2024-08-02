@@ -1,3 +1,5 @@
+"use client";
+
 import { cartItemSchema, cartSchema } from "@/entities/cart";
 import { createContext, useContext, useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";

@@ -52,8 +52,6 @@ export default function ShoppingCart() {
     0
   );
 
-  const { geolocation, radius } = usePreferences();
-
   if (isLoading) {
     return <div>Carregando...</div>;
   }
@@ -203,11 +201,11 @@ export default function ShoppingCart() {
           </div>
         </section>
 
-        <section className="flex justify-between">
+        {/* <section className="flex justify-between">
           <div className="ml-auto">
             <GenerateRecipesButton />
           </div>
-        </section>
+        </section> */}
 
         <section className="flex flex-col space-y-10">
           <div className="bg-white">

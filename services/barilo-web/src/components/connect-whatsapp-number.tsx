@@ -40,7 +40,7 @@ const formSchema = z.object({
 export const ConnectWhatsAppNumber = () => {
   const { status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
 
   // const { data } = useSWR(
   //   `${process.env.NEXT_PUBLIC_API_URL}/api/v1/whatsapp/phone-numbers`,
@@ -54,10 +54,11 @@ export const ConnectWhatsAppNumber = () => {
     },
   });
 
+  const { setError } = form;
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     // remove mask from phone number
     const phoneNumber = data.phone_number.replace(/\D/g, "");
-    setError("");
     try {
       setIsLoading(true);
       const resp = await fetch(
@@ -81,13 +82,12 @@ export const ConnectWhatsAppNumber = () => {
         }
 
         try {
-          const err = (await resp.json()) as { detail: string };
-          setError(err.detail); // Show error message
+          const err = (await resp.json()) as { message: string };
+          setError("phone_number", { type: "400", message: err.message });
           return;
         } catch (e) {
           console.log(e);
         }
-        setError("Erro desconhecido.");
       }
 
       try {
@@ -100,7 +100,6 @@ export const ConnectWhatsAppNumber = () => {
       }
     } catch (e) {
       console.error(e);
-      setError("Erro interno.");
     } finally {
       setIsLoading(false);
     }
@@ -116,14 +115,15 @@ export const ConnectWhatsAppNumber = () => {
             name="phone_number"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Título</FormLabel>
+                <FormLabel>Número de telefone</FormLabel>
                 <FormControl>
                   <PhoneNumberInput {...field} placeholder="(99) 9999-99999" />
                 </FormControl>
+                <FormMessage />
+
                 <FormDescription>
                   Insira seu número de telefone para receber ofertas diárias
                 </FormDescription>
-                <FormMessage />
               </FormItem>
             )}
           />

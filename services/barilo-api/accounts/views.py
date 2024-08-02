@@ -129,8 +129,7 @@ def whatsapp_numbers(request):
     if request.method == "GET":
         numbers = WhatsAppNumber.objects.filter(user=request.user)
         serializer = WhatsAppNumberSerializer(numbers, many=True)
-        results = [number["phone_number"] for number in serializer.data]
-        return Response(results)
+        return Response(serializer.data)
 
     serializer = WhatsAppNumberSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -146,7 +145,8 @@ def whatsapp_numbers(request):
     exists = WhatsAppNumber.objects.filter(phone_number=sanitized_number).exists()
     if exists:
         return Response(
-            {"error": "Phone number already exists"}, status=status.HTTP_400_BAD_REQUEST
+            {"message": "Esse número já está em uso."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     new_number = WhatsAppNumber.objects.create(

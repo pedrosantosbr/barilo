@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
@@ -27,16 +27,14 @@ export default function RootLayout({
           dm.variable
         )}
       >
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <PreferencesContextProvider>{children}</PreferencesContextProvider>
-          </ThemeProvider>
-        </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <PreferencesContextProvider>{children}</PreferencesContextProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
