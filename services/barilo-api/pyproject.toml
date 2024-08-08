@@ -28,6 +28,7 @@ ulid-py = "^1.1.0"
 algoliasearch = "^3.0.0"
 redis = "^5.0.7"
 django-redis = "^5.4.0"
+gunicorn = "^22.0.0"
 
 
 [build-system]
