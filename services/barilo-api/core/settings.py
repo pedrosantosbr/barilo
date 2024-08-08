@@ -43,7 +43,7 @@ SECRET_KEY = "django-insecure-65$lk2597jt!c&rt2%vj3-7y=tw8182$&^67)o((gsv03j4t_o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "barilo-rest-api"]
+ALLOWED_HOSTS = ["localhost", "barilo-rest-api", "api.barilo.com.br"]
 
 
 AUTH_USER_MODEL = "accounts.User"
@@ -143,9 +143,7 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 # Cors
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 # CORS_ORIGIN_ALLOW_ALL = True
 
