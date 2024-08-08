@@ -24,6 +24,7 @@ dotenv.load_dotenv()
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python"))
 # for dev container
 sys.path.append("/lib/python")
+sys.path.append("/root/barilo/lib/python")
 
 
 def get_settings(name, default=None):
