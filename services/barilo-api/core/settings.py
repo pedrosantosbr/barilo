@@ -24,6 +24,7 @@ dotenv.load_dotenv()
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "/lib/python"))
 # for dev container
 sys.path.append("/lib/python")
+# for digital ocean production
 sys.path.append("/root/barilo/lib/python")
 
 
@@ -300,11 +301,13 @@ LOGGING = {
 
 BARILO_REDIS_HOST = os.getenv("BARILO_REDIS_HOST", "redis")
 BARILO_REDIS_PORT = os.getenv("BARILO_REDIS_PORT", 6379)
+BARILO_REDIS_USER = os.getenv("BARILO_REDIS_USER", "user")
+BARILO_REDIS_PASSWORD = os.getenv("BARILO_REDIS_PASSWORD", "password")
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{BARILO_REDIS_HOST}:{BARILO_REDIS_PORT}/1",  # Adjust this if your Redis instance is elsewhere
+        "LOCATION": f"redis://{BARILO_REDIS_USER}:{BARILO_REDIS_PASSWORD}@{BARILO_REDIS_HOST}:{BARILO_REDIS_PORT}/1",  # Adjust this if your Redis instance is elsewhere
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
