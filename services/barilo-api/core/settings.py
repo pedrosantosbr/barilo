@@ -43,7 +43,7 @@ SECRET_KEY = "django-insecure-65$lk2597jt!c&rt2%vj3-7y=tw8182$&^67)o((gsv03j4t_o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "barilo-rest-api", "api.barilo.com.br"]
+ALLOWED_HOSTS = ["localhost", "barilo-rest-api", "api.barilo.com.br", "128.199.2.145"]
 
 
 AUTH_USER_MODEL = "accounts.User"
