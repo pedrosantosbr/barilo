@@ -318,3 +318,9 @@ SESSION_CACHE_ALIAS = "default"
 
 AGOLIA_APP_ID = os.getenv("AGOLIA_APP_ID", "app_id")
 AGOLIA_ADMIN_API_KEY = os.getenv("AGOLIA_ADMIN_API_KEY", "admin_api_key")
+
+STATIC_ROOT = "/var/www/static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    "/var/www/static/",
+]
