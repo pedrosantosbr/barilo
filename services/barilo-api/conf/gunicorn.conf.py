@@ -2,8 +2,8 @@ import multiprocessing
 
 bind = "127.0.0.1:8000"
 workers = multiprocessing.cpu_count() * 2 + 1
-accesslog = "/var/log/barilo/gunicorn_access.log"
-errorlog = "/var/log/barilo/gunicorn_error.log"
+accesslog = "/var/log/barilo-rest-api/gunicorn_access.log"
+errorlog = "/var/log/barilo-rest-api/gunicorn_error.log"
 loglevel = "info"
 timeout = 120
 graceful_timeout = 30
