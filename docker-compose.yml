@@ -161,6 +161,9 @@ services:
     image: redis:6.2.5
     ports:
       - 6379:6379
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./devops/redis/redis.conf:/usr/local/etc/redis/redis.conf
 
   rabbitmq:
     container_name: barilo-rabbitmq
